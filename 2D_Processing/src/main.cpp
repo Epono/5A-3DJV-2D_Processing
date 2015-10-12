@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "Point.h"
 #include "LineStrip.h"
+#include "Graham-Scan.h"
 
 #define M_PI 3.14
 
@@ -47,6 +48,9 @@ void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
 void rotate(float angle);
 
+#define WIDTH 1280
+#define HEIGHT 720
+
 int main(int argc, char **argv) {
 	//Glut and Window Initialization
 	glutInit(&argc, argv);										// Initializes Glut
@@ -55,7 +59,7 @@ int main(int argc, char **argv) {
 	glutInitWindowPosition(100, 100);							// Positions the window
 	glutCreateWindow("FunStuffWithOpenGL");						// Title of the window
 
-	gluOrtho2D(0, 1280, 720, 0);								// 2D orthogonal frame with xMin, xMax, yMin, yMax
+	gluOrtho2D(0, WIDTH, HEIGHT, 0);								// 2D orthogonal frame with xMin, xMax, yMin, yMax
 
 	// OpenGL initialization
 	glClearColor(0.0, 0.0, 0.0, 1.0);		// Background color : black ?
@@ -256,6 +260,14 @@ void keyboard(unsigned char key, int x, int y) {
 	case 'o':
 		creationState = scaling;
 		break;
+	case 'g':
+	{
+		Graham_Scan g(currentLine->getPoints());
+		g.computeCentroid();
+		std::cout << "Barycentre : " << g.getCentroid()->getX() << ", " << g.getCentroid()->getY() << std::endl;
+		g.sortPoints();
+		break;
+	}
 	case 127:
 		// deletes selected point
 		if(windowVerticeToMove != -1) {

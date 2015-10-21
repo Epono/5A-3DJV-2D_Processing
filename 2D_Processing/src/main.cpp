@@ -155,6 +155,7 @@ void mouse(int button, int state, int x, int y) {
 }
 
 void motion(int x, int y) {
+	y = HEIGHT - y;
 	if(creationState == selectPoint) {
 		if(windowVerticeToMove != -1) {
 			std::vector<Point>& points = currentLine->getPoints();

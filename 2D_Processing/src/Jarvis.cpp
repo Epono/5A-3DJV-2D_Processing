@@ -4,17 +4,30 @@ Jarvis::Jarvis(std::vector<Point> const points) {
 	m_points = points;
 }
 
-float angle(Point v, Point PiPj) {
-	float dot = v.getX() * PiPj.getX() + v.getY() * PiPj.getY();
-	float det = v.getX() * PiPj.getX() - v.getY() * PiPj.getY();
-	float angle = atan2(det, dot);
-	std::cout << "Angle de " << v.getX() << ", " << v.getY() << " avec " << PiPj.getX() << ", " << PiPj.getY() << " : " << angle * (180 / 3.14) << std::endl;
-	// L'angle est dans le sens horaire
-	return angle;
-}
-
 float length(Point PiPj) {
 	return sqrt((PiPj.getY() * PiPj.getY()) + (PiPj.getX() * PiPj.getX()));
+}
+
+float angle(Point v, Point PiPj) {
+	std::cout << "Angle de " << v.getX() << ", " << v.getY() << " avec " << PiPj.getX() << ", " << PiPj.getY() << " : ";
+	v.setX(v.getX() / length(v));
+	v.setY(v.getY() / length(v));
+	PiPj.setX(PiPj.getX() / length(PiPj));
+	PiPj.setY(PiPj.getY() / length(PiPj));
+
+	float dot = v.getX() * PiPj.getX() + v.getY() * PiPj.getY();
+	float det = v.getX() * PiPj.getX() - v.getY() * PiPj.getY();
+
+	//float angle = atan2(PiPj.getY(), PiPj.getX()) - atan2(v.getY(), v.getX());
+	//float angle = atan2(PiPj.getX(), PiPj.getY()) - atan2(v.getX(), v.getY());
+
+	float angle = atan2(det, dot);
+	if(angle < 0)
+		angle += 3.14;
+
+	std::cout << angle * (180 / 3.14) << std::endl;
+	// L'angle est dans le sens horaire
+	return angle;
 }
 
 void Jarvis::computeJarvis() {
@@ -53,12 +66,11 @@ void Jarvis::computeJarvis() {
 		//Recheche du point le plus proche (en angle) de la droite
 		for(j = inew + 1; j < m_points.size(); j++) {
 			if(j != i) {
-				PiPj.setX(m_points.at(j).getX() - m_points.at(i).getX());
-				PiPj.setY(m_points.at(j).getY() - m_points.at(i).getY());
-				float a = angle(v, PiPj);
-				if(amin > a || (amin == a && lmax < length(PiPj))) {
+				Point PiPj2(m_points.at(j).getX() - m_points.at(i).getX(), m_points.at(j).getY() - m_points.at(i).getY());
+				float a = angle(v, PiPj2);
+				if(amin > a || (amin == a && lmax < length(PiPj2))) {
 					amin = a;
-					lmax = length(PiPj);
+					lmax = length(PiPj2);
 					inew = j;
 				}
 			}

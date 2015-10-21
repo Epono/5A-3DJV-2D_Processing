@@ -26,18 +26,6 @@ float angle2(Point o, Point a, Point b) {
 	return angle;
 }
 
-//float angleWithOxB(Point p) {
-//	//cos - 1(   u.v   )
-//	//        ||u||||v||
-//	//atan2(v_y, v_x) - atan2(u_y, u_x)
-//	return atan2(p.getY(), p.getX());
-//}
-
-//float distance(Point a, Point b) {
-//	float dx = a.getX() - b.getX(), dy = a.getY() - b.getY();
-//	return sqrt(dx * dx + dy * dy);
-//}
-
 void Graham_Scan::sortPoints() {
 	std::vector<Point*> sortedPoints;
 
@@ -54,10 +42,17 @@ void Graham_Scan::sortPoints() {
 //	return std::inner_product(begin(a), end(a), begin(b), 0.0);
 //}
 
+//float angleWithOxB(Point p) {
+//	//cos - 1(   u.v   )
+//	//        ||u||||v||
+//	//atan2(v_y, v_x) - atan2(u_y, u_x)
+//	return atan2(p.getY(), p.getX());
+//}
 
-
-
-
+//float distance(Point a, Point b) {
+//	float dx = a.getX() - b.getX(), dy = a.getY() - b.getY();
+//	return sqrt(dx * dx + dy * dy);
+//}
 
 // To find orientation of ordered triplet (p, q, r).
 // The function returns following values

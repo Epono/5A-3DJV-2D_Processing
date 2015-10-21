@@ -10,6 +10,7 @@
 #include "Point.h"
 #include "LineStrip.h"
 #include "Graham-Scan.h"
+#include "Jarvis.h"
 
 #define M_PI 3.14
 
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
 	gluOrtho2D(0, WIDTH, HEIGHT, 0);								// 2D orthogonal frame with xMin, xMax, yMin, yMax
 
 	// OpenGL initialization
-	glClearColor(0.0, 0.0, 0.0, 1.0);		// Background color : black ?
+	glClearColor(0.0, 0.0, 0.0, 0.0);		// Background color : black ?
 	glColor3f(0.0, 0.0, 0.0);				// Color : white
 	glPointSize(4.0);						// Point size : 4px
 
@@ -266,6 +267,15 @@ void keyboard(unsigned char key, int x, int y) {
 		g.computeCentroid();
 		std::cout << "Barycentre : " << g.getCentroid()->getX() << ", " << g.getCentroid()->getY() << std::endl;
 		g.sortPoints();
+		break;
+	}
+	case 'j':
+	{
+		Jarvis j(currentLine->getPoints());
+		j.computeJarvis();
+		for(auto& point : j.getEnveloppe()) {
+			std::cout << "Enveloppe : " << point.getX() << ", " << point.getY() << std::endl;
+		}
 		break;
 	}
 	case 127:

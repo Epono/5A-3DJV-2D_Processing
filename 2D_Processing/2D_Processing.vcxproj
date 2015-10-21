@@ -12,12 +12,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Graham-Scan.cpp" />
+    <ClCompile Include="src\Jarvis.cpp" />
     <ClCompile Include="src\Line.cpp" />
     <ClCompile Include="src\LineStrip.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Graham-Scan.h" />
+    <ClInclude Include="headers\Jarvis.h" />
     <ClInclude Include="headers\Line.h" />
     <ClInclude Include="headers\LineStrip.h" />
     <ClInclude Include="headers\Point.h" />

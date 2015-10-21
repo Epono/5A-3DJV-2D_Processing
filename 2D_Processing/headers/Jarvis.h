@@ -13,6 +13,7 @@ private:
 	std::vector<Point> m_enveloppe;
 
 public:
+	Jarvis() : m_points(std::vector<Point>()) {}
 	Jarvis(std::vector<Point> const points);
 
 	void computeJarvis();

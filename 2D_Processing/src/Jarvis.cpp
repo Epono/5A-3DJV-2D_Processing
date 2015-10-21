@@ -8,6 +8,8 @@ float angle(Point v, Point PiPj) {
 	float dot = v.getX() * PiPj.getX() + v.getY() * PiPj.getY();
 	float det = v.getX() * PiPj.getX() - v.getY() * PiPj.getY();
 	float angle = atan2(det, dot);
+	std::cout << "Angle de " << v.getX() << ", " << v.getY() << " avec " << PiPj.getX() << ", " << PiPj.getY() << " : " << angle * (180 / 3.14) << std::endl;
+	// L'angle est dans le sens horaire
 	return angle;
 }
 
@@ -32,7 +34,7 @@ void Jarvis::computeJarvis() {
 	int i = index;
 
 	do {
-		poly.push_back(m_points.at(index));
+		poly.push_back(m_points.at(i));
 		int j;
 		if(i == 0) {
 			j = 1;
@@ -52,7 +54,7 @@ void Jarvis::computeJarvis() {
 		for(j = inew + 1; j < m_points.size(); j++) {
 			if(j != i) {
 				PiPj.setX(m_points.at(j).getX() - m_points.at(i).getX());
-				PiPj.setX(m_points.at(j).getY() - m_points.at(i).getY());
+				PiPj.setY(m_points.at(j).getY() - m_points.at(i).getY());
 				float a = angle(v, PiPj);
 				if(amin > a || (amin == a && lmax < length(PiPj))) {
 					amin = a;
@@ -64,10 +66,11 @@ void Jarvis::computeJarvis() {
 
 		// Mise à jour du pivot directeur
 		v.setX(m_points.at(inew).getX() - m_points.at(i).getX());
-		v.setX(m_points.at(inew).getY() - m_points.at(i).getY());
+		v.setY(m_points.at(inew).getY() - m_points.at(i).getY());
 		i = inew;
 	} while(i != index);
 
+	//poly.push_back(m_points.at(index));
 	m_enveloppe = poly;
 }
 

@@ -18,6 +18,7 @@ int creationState = waitingForFirstClick;
 
 std::vector<LineStrip*> lines;
 LineStrip *currentLine = nullptr;
+LineStrip *currentJarvisPoints = nullptr;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -43,7 +44,7 @@ void colorPicking(int option);
 void setPolygonColor(float colors[3], float r, float g, float b);
 void write();										// Writes on the top left what's happening
 
-void drawCurve(LineStrip& line, int lineSize);
+void drawCurve(LineStrip& line, int lineSize, bool drawCurve);
 
 void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
@@ -60,7 +61,7 @@ int main(int argc, char **argv) {
 	glutInitWindowPosition(100, 100);							// Positions the window
 	glutCreateWindow("FunStuffWithOpenGL");						// Title of the window
 
-	gluOrtho2D(0, WIDTH, HEIGHT, 0);								// 2D orthogonal frame with xMin, xMax, yMin, yMax
+	gluOrtho2D(0, WIDTH, 0, HEIGHT);								// 2D orthogonal frame with xMin, xMax, yMin, yMax
 
 	// OpenGL initialization
 	glClearColor(0.0, 0.0, 0.0, 0.0);		// Background color : black ?
@@ -92,10 +93,12 @@ void display() {
 
 	write();
 
-	for(auto &l : lines)
-		drawCurve(*l, 2);
+	//for(auto &l : lines)
+	//	drawCurve(*l, 2, false);
 	if(currentLine != nullptr)
-		drawCurve(*currentLine, 2);
+		drawCurve(*currentLine, 2, false);
+	if(currentJarvisPoints != nullptr)
+		drawCurve(*currentJarvisPoints, 2, true);
 
 	glutSwapBuffers();				// Double buffer ?
 	glFlush();						// Forces refresh ?
@@ -105,6 +108,7 @@ void display() {
 * Function in charge of handling mouse events (clicking only, not dragging)
 */
 void mouse(int button, int state, int x, int y) {
+	y = HEIGHT - y;
 	clicked = Point(x, y);
 	Point point(x, y);
 	if(currentLine != nullptr) {
@@ -115,10 +119,12 @@ void mouse(int button, int state, int x, int y) {
 				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
 				break;
 			case waitingForFirstClick:
+				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
 				currentLine->addPoint(point);
 				creationState++;
 				break;
 			case waitingForNextClick:
+				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
 				currentLine->addPoint(point);
 				break;
 			case selectPoint:
@@ -276,6 +282,7 @@ void keyboard(unsigned char key, int x, int y) {
 		for(auto& point : j.getEnveloppe()) {
 			std::cout << "Enveloppe : " << point.getX() << ", " << point.getY() << std::endl;
 		}
+		currentJarvisPoints = new LineStrip(j.getEnveloppe());
 		break;
 	}
 	case 127:
@@ -404,15 +411,22 @@ void setPolygonColor(float colors[3], float r, float g, float b) {
 	*(colors + 2) = b;
 }
 
-void drawCurve(LineStrip& line, int lineSize) {
+void drawCurve(LineStrip& line, int lineSize, bool drawLine) {
 	glLineWidth(lineSize);
 	glColor3f(1.0f, 0.0f, 0.0f);		// Sets the drawing color
 	if(!hideControlPoints) {
-		// Draws line strip
-		//glBegin(GL_LINE_STRIP);
-		//for(auto &p : line.getPoints())
-		//	glVertex2f(p.getX(), p.getY());
-		//glEnd();
+		if(drawLine) {
+			// Draws line strip
+			glBegin(GL_LINE_STRIP);
+			//for(auto &p : line.getPoints())
+			//	glVertex2f(p.getX(), p.getY());
+			for(int i = 0; i < line.getPoints().size(); i++) {
+				Point p = line.getPoints().at(i);
+				glVertex2f(p.getX(), p.getY());
+			}
+			glVertex2f(line.getPoints().at(0).getX(), line.getPoints().at(0).getY());
+			glEnd();
+		}
 
 		// Draws vertices of the connected lines strip
 		glBegin(GL_POINTS);
@@ -437,7 +451,7 @@ void write() {
 	else {
 		truc = "Unknown action";
 	}
-	glRasterPos2f(5, 20);
+	glRasterPos2f(5, HEIGHT - 20);
 
 	for(int i = 0; truc[i] != '\0'; i++)
 		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, truc[i]);

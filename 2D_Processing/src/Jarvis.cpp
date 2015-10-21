@@ -4,32 +4,6 @@ Jarvis::Jarvis(std::vector<Point*> points) {
 	_points = points;
 }
 
-//float length(Point PiPj) {
-//	return sqrt((PiPj.getY() * PiPj.getY()) + (PiPj.getX() * PiPj.getX()));
-//}
-
-//float angle(Point v, Point PiPj) {
-//	std::cout << "Angle de " << v.getX() << ", " << v.getY() << " avec " << PiPj.getX() << ", " << PiPj.getY() << " : ";
-//	v.setX(v.getX() / length(v));
-//	v.setY(v.getY() / length(v));
-//	PiPj.setX(PiPj.getX() / length(PiPj));
-//	PiPj.setY(PiPj.getY() / length(PiPj));
-//
-//	float dot = v.getX() * PiPj.getX() + v.getY() * PiPj.getY();
-//	float det = v.getX() * PiPj.getX() - v.getY() * PiPj.getY();
-//
-//	//float angle = atan2(PiPj.getY(), PiPj.getX()) - atan2(v.getY(), v.getX());
-//	//float angle = atan2(PiPj.getX(), PiPj.getY()) - atan2(v.getX(), v.getY());
-//
-//	float angle = atan2(det, dot);
-//	if(angle < 0)
-//		angle += 3.14;
-//
-//	std::cout << angle * (180 / 3.14) << std::endl;
-//	// L'angle est dans le sens horaire
-//	return angle;
-//}
-
 double angle(const Point& a, const Point& b) {
 	double vecUX(a.getX())
 		, vecUY(a.getY())
@@ -38,24 +12,23 @@ double angle(const Point& a, const Point& b) {
 		, det(vecUX*vecVY - vecUY*vecVX)
 		, dot(vecUX*vecVX + vecUY*vecVY);
 	double angle = det < 0 ? 2 * M_PI + std::atan2(det, dot) : std::atan2(det, dot);
-	std::cout << angle << std::endl;
 	return angle;
 }
 
 void Jarvis::computeJarvis() {
-	Point& start = *(_points.at(0));
-	int index = 0;
+	Point start = Point(_points.at(0)->getY(), _points.at(0)->getY());
+	int i0 = 0;
 
-	for(int i = 1; i < _points.size(); i++) {
-		Point& point = *(_points.at(i));
+	for(int iterationDeMonZboub = 1; iterationDeMonZboub < _points.size(); iterationDeMonZboub++) {
+		Point& point = *(_points.at(iterationDeMonZboub));
 		if(point.getX() < start.getX() || (point.getX() == start.getX() && point.getY() < start.getY())) {
-			index = i;
+			i0 = iterationDeMonZboub;
 			start = point;
 		}
 	}
 
 	Point v(0, -1);
-	int i = index;
+	int i = i0;
 
 	do {
 		m_enveloppe.push_back(_points.at(i));
@@ -70,7 +43,6 @@ void Jarvis::computeJarvis() {
 		// PiPj est un vecteur (x = distance en x, y = distance en y)
 		Point PiPj(_points.at(j)->getX() - _points.at(i)->getX(), _points.at(j)->getY() - _points.at(i)->getY());
 
-		//float amin = angle(v, PiPj);
 		float amin = angle(v, PiPj);
 		float lmax = _points.at(i)->DistanceTo(*(_points.at(j)));
 		int inew = j;
@@ -92,7 +64,7 @@ void Jarvis::computeJarvis() {
 		v.setX(_points.at(inew)->getX() - _points.at(i)->getX());
 		v.setY(_points.at(inew)->getY() - _points.at(i)->getY());
 		i = inew;
-	} while(i != index);
+	} while(i != i0);
 }
 
 void Jarvis::addPoint(Point& const point) {

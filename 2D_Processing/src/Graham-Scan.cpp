@@ -1,21 +1,42 @@
 #include "Graham-Scan.h"
+#include <algorithm>
 
-Graham_Scan::Graham_Scan(std::vector<Point> points) {
-	m_points = points;
+Graham_Scan::Graham_Scan(std::vector<Point*> points) : m_points(points)
+{ }
+
+void Graham_Scan::calculEnveloppe()
+{
+	computeCentroid();
+	//Sort the Points following GrahamSort rule
+	std::sort(m_points.begin(), m_points.end(), GrahamSort(m_centroid));
 }
 
 //
 //
-void Graham_Scan::computeCentroid() {
-	float sumX = 0, sumY = 0;
+void Graham_Scan::computeCentroid() 
+{
+	float sumX(0), sumY(0);
 
-	for(auto point : m_points) {
-		sumX += point.getX();
-		sumY += point.getY();
+	for(auto point : m_points) 
+	{
+		sumX += point->getX();
+		sumY += point->getY();
 	}
 
 	m_centroid = new Point(sumX / m_points.size(), sumY / m_points.size());
 }
+
+double Graham_Scan::OrientedAngle(const Point& a, const Point& b, const Point& c)
+{
+	double vecUX(a.getX() - b.getX())
+		, vecUY(a.getY() - b.getY())
+		, vecVX(c.getX() - b.getX())
+		, vecVY(c.getY() - b.getY())
+		, det(vecUX*vecVY - vecUY*vecVX)
+		, dot(vecUX*vecVX + vecUY*vecVY);
+	return det < 0 ? 2 * M_PI + std::atan2(det, dot) : std::atan2(det, dot);
+}
+
 
 float angle2(Point o, Point a, Point b) {
 	//float dot_product = dotProduct(o, a, b);
@@ -26,33 +47,16 @@ float angle2(Point o, Point a, Point b) {
 	return angle;
 }
 
-void Graham_Scan::sortPoints() {
-	std::vector<Point*> sortedPoints;
-
-	for(auto& point : m_points) {
-		float angle_rad = angle2(Point(1000000, m_centroid->getY()), Point(m_centroid->getX(), m_centroid->getY()), point);
-		float angle_deg = angle_rad / 3.14 * 180;
-		std::cout << point.getX() << ", " << point.getY() << " - " << angle_deg << std::endl;
-	}
-}
-
 //float dotProduct(Point o, Point a, Point b) {
 //	double a[] = {a->getX() - o.getX(), a->getY() - o.getY(), 0};
 //	double b[] = {b->getX() - o.getX(), b->getY() - o.getY(), 0};
 //	return std::inner_product(begin(a), end(a), begin(b), 0.0);
 //}
 
-//float angleWithOxB(Point p) {
-//	//cos - 1(   u.v   )
-//	//        ||u||||v||
-//	//atan2(v_y, v_x) - atan2(u_y, u_x)
-//	return atan2(p.getY(), p.getX());
-//}
 
-//float distance(Point a, Point b) {
-//	float dx = a.getX() - b.getX(), dy = a.getY() - b.getY();
-//	return sqrt(dx * dx + dy * dy);
-//}
+
+
+
 
 // To find orientation of ordered triplet (p, q, r).
 // The function returns following values

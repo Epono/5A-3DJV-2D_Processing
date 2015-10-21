@@ -12,8 +12,6 @@
 #include "Graham-Scan.h"
 #include "Jarvis.h"
 
-#define M_PI 3.14
-
 int creationState = waitingForFirstClick;
 
 std::vector<LineStrip*> lines;
@@ -57,7 +55,7 @@ int main(int argc, char **argv) {
 	//Glut and Window Initialization
 	glutInit(&argc, argv);										// Initializes Glut
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);				// RGB display mode, with depth
-	glutInitWindowSize(1280, 720);								// Sets window's dimensions
+	glutInitWindowSize(WIDTH, HEIGHT);								// Sets window's dimensions
 	glutInitWindowPosition(100, 100);							// Positions the window
 	glutCreateWindow("FunStuffWithOpenGL");						// Title of the window
 
@@ -76,6 +74,7 @@ int main(int argc, char **argv) {
 	glutMotionFunc(motion);
 
 	currentLine = new LineStrip();
+	std::cout << "Angle = [" << Graham_Scan::OrientedAngle(Point(1, 0),Point(0, 0),Point(0, -1)) * 180 / M_PI << "]" << std::endl;
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
 	createMenu();							// Creates the menu available via right-click
@@ -270,10 +269,12 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'g':
 	{
+		/*
 		Graham_Scan g(currentLine->getPoints());
 		g.computeCentroid();
 		std::cout << "Barycentre : " << g.getCentroid()->getX() << ", " << g.getCentroid()->getY() << std::endl;
 		g.sortPoints();
+		*/
 		break;
 	}
 	case 'j':
@@ -370,10 +371,14 @@ void createMenu() {
 
 	mainMenu = glutCreateMenu(menu);
 
+	glutAddMenuEntry("Jarvis", 1);
+	glutAddMenuEntry("Graham-Scan", 2);
+	/*
 	glutAddMenuEntry("Vert", 1);
 	glutAddMenuEntry("Rouge", 2);
 	glutAddMenuEntry("Bleu", 3);
 	glutAddMenuEntry("Nouvelle courbe", 4);
+	*/
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
@@ -381,17 +386,12 @@ void createMenu() {
 void menu(int opt) {
 	switch(opt) {
 	case 1:
-		std::cout << "Vert" << std::endl;
-		currentLine->setColor(0.f, 1.f, 0.f);
+		std::cout << "Jarvis Implem" << std::endl;
 		break;
 	case 2:
-		std::cout << "Rouge" << std::endl;
-		currentLine->setColor(1.f, 0.f, 0.f);
+		std::cout << "Graham-Scan Implem" << std::endl;
 		break;
-	case 3:
-		std::cout << "Bleu" << std::endl;
-		currentLine->setColor(0.f, 0.f, 1.f);
-		break;
+	/*
 	case 4:
 		std::cout << "Nouvelle courbe" << std::endl;
 		if(currentLine != nullptr)
@@ -399,6 +399,7 @@ void menu(int opt) {
 		currentLine = new LineStrip();
 		creationState = waitingForFirstClick;
 		break;
+	*/
 	default:
 		printf("What ? %d choisie mais pas d'option\n", opt);
 		break;

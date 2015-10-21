@@ -19,8 +19,18 @@ public:
 		return *this;
 	}
 
-	float getX(){ return _x; }
-	float getY(){ return _y; }
+	double DistanceTo(const Point& p)
+	{
+		return std::sqrt( std::pow(this->_x - p._x, 2)
+						+ std::pow(this->_y - p._y, 2));
+	}
+	double GetDistance()
+	{
+		return std::sqrt(std::pow(_x, 2) + std::pow(_y, 2));
+	}
+
+	float getX() const { return _x; }
+	float getY() const { return _y; }
 	void setX(float x){ _x = x; }
 	void setY(float y){ _y = y; }
 };

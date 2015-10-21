@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 	glutMotionFunc(motion);
 
 	currentLine = new LineStrip();
-	std::cout << "Angle = [" << Graham_Scan::OrientedAngle(Point(1, 0),Point(0, 0),Point(0, -1)) * 180 / M_PI << "]" << std::endl;
+	std::cout << "Angle = [" << Graham_Scan::OrientedAngle(Point(1, 0), Point(0, 0), Point(0, -1)) * 180 / M_PI << "]" << std::endl;
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
 	createMenu();							// Creates the menu available via right-click
@@ -109,7 +109,7 @@ void display() {
 void mouse(int button, int state, int x, int y) {
 	y = HEIGHT - y;
 	clicked = Point(x, y);
-	Point point(x, y);
+	Point* point = new Point(x, y);
 	if(currentLine != nullptr) {
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 			presse = 1;
@@ -134,11 +134,11 @@ void mouse(int button, int state, int x, int y) {
 			if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 				presse = 0;
 				windowVerticeToMove = -1;
-				std::vector<Point>& points = currentLine->getPoints();
+				std::vector<Point*>& points = currentLine->getPoints();
 				if(creationState == selectPoint) {
 					for(unsigned int i = 0; i < points.size(); i++) {
-						float tempX = points.at(i).getX();
-						float tempY = points.at(i).getY();
+						float tempX = points.at(i)->getX();
+						float tempY = points.at(i)->getY();
 						int distance = 10;
 						if(abs(tempX - x) < distance && abs(tempY - y) < distance) {
 							windowVerticeToMove = i;
@@ -157,9 +157,9 @@ void motion(int x, int y) {
 	y = HEIGHT - y;
 	if(creationState == selectPoint) {
 		if(windowVerticeToMove != -1) {
-			std::vector<Point>& points = currentLine->getPoints();
-			points.at(windowVerticeToMove).setX(x);
-			points.at(windowVerticeToMove).setY(y);
+			std::vector<Point*>& points = currentLine->getPoints();
+			points.at(windowVerticeToMove)->setX(x);
+			points.at(windowVerticeToMove)->setY(y);
 		}
 	}
 	else if(creationState == scaling) {
@@ -174,10 +174,10 @@ void motion(int x, int y) {
 		float sumY = 0;
 
 		//Calcul du barycentre pour décaler
-		std::vector<Point>& points = currentLine->getPoints();
+		std::vector<Point*>& points = currentLine->getPoints();
 		for(unsigned int i = 0; i < points.size(); i++) {
-			sumX += points.at(i).getX();
-			sumY += points.at(i).getY();
+			sumX += points.at(i)->getX();
+			sumY += points.at(i)->getY();
 		}
 
 		Point barycenter = {sumX / points.size(), sumY / points.size()};
@@ -282,7 +282,7 @@ void keyboard(unsigned char key, int x, int y) {
 		Jarvis j(currentLine->getPoints());
 		j.computeJarvis();
 		for(auto& point : j.getEnveloppe()) {
-			std::cout << "Enveloppe : " << point.getX() << ", " << point.getY() << std::endl;
+			std::cout << "Enveloppe : " << point->getX() << ", " << point->getY() << std::endl;
 		}
 		currentJarvisPoints = new LineStrip(j.getEnveloppe());
 		break;
@@ -290,7 +290,7 @@ void keyboard(unsigned char key, int x, int y) {
 	case 127:
 		// deletes selected point
 		if(windowVerticeToMove != -1) {
-			std::vector<Point>& points = currentLine->getPoints();
+			std::vector<Point*>& points = currentLine->getPoints();
 			points.erase(points.begin() + windowVerticeToMove);
 		}
 		windowVerticeToMove = -1;
@@ -391,15 +391,15 @@ void menu(int opt) {
 	case 2:
 		std::cout << "Graham-Scan Implem" << std::endl;
 		break;
-	/*
-	case 4:
+		/*
+		case 4:
 		std::cout << "Nouvelle courbe" << std::endl;
 		if(currentLine != nullptr)
-			lines.push_back(currentLine);
+		lines.push_back(currentLine);
 		currentLine = new LineStrip();
 		creationState = waitingForFirstClick;
 		break;
-	*/
+		*/
 	default:
 		printf("What ? %d choisie mais pas d'option\n", opt);
 		break;
@@ -423,17 +423,17 @@ void drawCurve(LineStrip& line, int lineSize, bool drawLine) {
 			//for(auto &p : line.getPoints())
 			//	glVertex2f(p.getX(), p.getY());
 			for(int i = 0; i < line.getPoints().size(); i++) {
-				Point p = line.getPoints().at(i);
+				Point p = *(line.getPoints().at(i));
 				glVertex2f(p.getX(), p.getY());
 			}
-			glVertex2f(line.getPoints().at(0).getX(), line.getPoints().at(0).getY());
+			glVertex2f(line.getPoints().at(0)->getX(), line.getPoints().at(0)->getY());
 			glEnd();
 		}
 
 		// Draws vertices of the connected lines strip
 		glBegin(GL_POINTS);
 		for(auto &p : line.getPoints())
-			glVertex2f(p.getX(), p.getY());
+			glVertex2f(p->getX(), p->getY());
 		glEnd();
 	}
 	if(line.getPoints().size() > 2) {
@@ -468,13 +468,13 @@ void translate(int xOffset, int yOffset) {
 		0, 1, yOffset
 	};
 
-	std::vector<Point>& points = currentLine->getPoints();
+	std::vector<Point*>& points = currentLine->getPoints();
 	for(unsigned int i = 0; i < points.size(); i++) {
-		x = points.at(i).getX();
-		y = points.at(i).getY();
+		x = points.at(i)->getX();
+		y = points.at(i)->getY();
 
-		points.at(i).setX((x * matrix[0]) + (y * matrix[1]) + (1 * matrix[2]));
-		points.at(i).setY((x * matrix[3]) + (y * matrix[4]) + (1 * matrix[5]));
+		points.at(i)->setX((x * matrix[0]) + (y * matrix[1]) + (1 * matrix[2]));
+		points.at(i)->setY((x * matrix[3]) + (y * matrix[4]) + (1 * matrix[5]));
 	}
 }
 
@@ -498,29 +498,29 @@ void scale(float scaleX, float scaleY) {
 	float sumY = 0;
 
 	//Calcul du barycentre pour décaler
-	std::vector<Point>& points = currentLine->getPoints();
+	std::vector<Point*>& points = currentLine->getPoints();
 	for(unsigned int i = 0; i < points.size(); i++) {
-		sumX += points.at(i).getX();
-		sumY += points.at(i).getY();
+		sumX += points.at(i)->getX();
+		sumY += points.at(i)->getY();
 	}
 
 	Point barycenter = {sumX / currentLine->getPoints().size(), sumY / currentLine->getPoints().size()};
 
 	for(unsigned int i = 0; i < points.size(); i++) {
 		// Translate barycenter to origin
-		points.at(i).setX(points.at(i).getX() - barycenter.getX());
-		points.at(i).setY(points.at(i).getY() - barycenter.getY());
+		points.at(i)->setX(points.at(i)->getX() - barycenter.getX());
+		points.at(i)->setY(points.at(i)->getY() - barycenter.getY());
 
-		x = points.at(i).getX();
-		y = points.at(i).getY();
+		x = points.at(i)->getX();
+		y = points.at(i)->getY();
 
 		// Scale
-		points.at(i).setX((x * matrix[0]) + (y * matrix[1]));
-		points.at(i).setY((x * matrix[2]) + (y * matrix[3]));
+		points.at(i)->setX((x * matrix[0]) + (y * matrix[1]));
+		points.at(i)->setY((x * matrix[2]) + (y * matrix[3]));
 
 		// Translation back
-		points.at(i).setX(points.at(i).getX() + barycenter.getX());
-		points.at(i).setY(points.at(i).getY() + barycenter.getY());
+		points.at(i)->setX(points.at(i)->getX() + barycenter.getX());
+		points.at(i)->setY(points.at(i)->getY() + barycenter.getY());
 	}
 }
 
@@ -539,10 +539,10 @@ void rotate(float angle) {
 	float sumY = 0;
 
 	//Calcul du barycentre pour décaler
-	std::vector<Point>& points = currentLine->getPoints();
+	std::vector<Point*>& points = currentLine->getPoints();
 	for(unsigned int i = 0; i < points.size(); i++) {
-		sumX += points.at(i).getX();
-		sumY += points.at(i).getY();
+		sumX += points.at(i)->getX();
+		sumY += points.at(i)->getY();
 	}
 
 	Point barycenter = {sumX / points.size(), sumY / points.size()};
@@ -550,18 +550,18 @@ void rotate(float angle) {
 	for(unsigned int i = 0; i < points.size(); i++) {
 
 		// Translate barycenter to origin
-		points.at(i).setX(points.at(i).getX() - barycenter.getX());
-		points.at(i).setY(points.at(i).getY() - barycenter.getY());
+		points.at(i)->setX(points.at(i)->getX() - barycenter.getX());
+		points.at(i)->setY(points.at(i)->getY() - barycenter.getY());
 
-		x = points.at(i).getX();
-		y = points.at(i).getY();
+		x = points.at(i)->getX();
+		y = points.at(i)->getY();
 
 		// Rotation around origin
-		points.at(i).setX((x * matrix[0]) + (y * matrix[1]));
-		points.at(i).setY((x * matrix[2]) + (y * matrix[3]));
+		points.at(i)->setX((x * matrix[0]) + (y * matrix[1]));
+		points.at(i)->setY((x * matrix[2]) + (y * matrix[3]));
 
 		// Translation back
-		points.at(i).setX(points.at(i).getX() + barycenter.getX());
-		points.at(i).setY(points.at(i).getY() + barycenter.getY());
+		points.at(i)->setX(points.at(i)->getX() + barycenter.getX());
+		points.at(i)->setY(points.at(i)->getY() + barycenter.getY());
 	}
 }

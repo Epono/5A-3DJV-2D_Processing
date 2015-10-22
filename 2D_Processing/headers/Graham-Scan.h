@@ -4,21 +4,23 @@
 #include <iostream>
 
 #include "Point.h"
+#include "LineStrip.h"
 
-class Graham_Scan
+class Graham_Scan : public LineStrip
 {
 private:
-	Point* m_centroid;
-	std::vector<Point*> m_points;
+	Point* centroid_;
+	std::vector<Point*> enveloppe_;
 
 public:
-	Graham_Scan(std::vector<Point*> points);
+	Graham_Scan(std::vector<Point*> points) : LineStrip(points) {}
 
 	void calculEnveloppe();
 	void computeCentroid();
 	static double OrientedAngle(const Point&, const Point&, const Point&);
 
-	Point* getCentroid() { return m_centroid; }
+	Point* getCentroid() { return centroid_; }
+	std::vector<Point*> getEnveloppe() { return enveloppe_; }
 };
 
 typedef struct GrahamSort

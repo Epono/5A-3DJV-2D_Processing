@@ -17,6 +17,7 @@ int creationState = waitingForFirstClick;
 std::vector<LineStrip*> lines;
 LineStrip *currentLine = nullptr;
 LineStrip *currentJarvisPoints = nullptr;
+LineStrip *currentGrahamPoints = nullptr;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -74,7 +75,6 @@ int main(int argc, char **argv) {
 	glutMotionFunc(motion);
 
 	currentLine = new LineStrip();
-	std::cout << "Angle = [" << Graham_Scan::OrientedAngle(Point(1, 0), Point(0, 0), Point(0, -1)) * 180 / M_PI << "]" << std::endl;
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
 	createMenu();							// Creates the menu available via right-click
@@ -98,6 +98,8 @@ void display() {
 		drawCurve(*currentLine, 2, false);
 	if(currentJarvisPoints != nullptr)
 		drawCurve(*currentJarvisPoints, 2, true);
+	if (currentGrahamPoints != nullptr)
+		drawCurve(*currentGrahamPoints, 2, true);
 
 	glutSwapBuffers();				// Double buffer ?
 	glFlush();						// Forces refresh ?
@@ -269,22 +271,21 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'g':
 	{
-		/*
 		Graham_Scan g(currentLine->getPoints());
-		g.computeCentroid();
-		std::cout << "Barycentre : " << g.getCentroid()->getX() << ", " << g.getCentroid()->getY() << std::endl;
-		g.sortPoints();
-		*/
+		g.calculEnveloppe();
+		currentGrahamPoints = new LineStrip(g.getEnveloppe());
 		break;
 	}
 	case 'j':
 	{
+		/*
 		Jarvis j(currentLine->getPoints());
 		j.computeJarvis();
 		for(auto& point : j.getEnveloppe()) {
 			std::cout << "Enveloppe : " << point->getX() << ", " << point->getY() << std::endl;
 		}
 		currentJarvisPoints = new LineStrip(j.getEnveloppe());
+		*/
 		break;
 	}
 	case 127:

@@ -1,14 +1,46 @@
 #include "Graham-Scan.h"
 #include <algorithm>
 
-Graham_Scan::Graham_Scan(std::vector<Point*> points) : m_points(points)
-{ }
 
 void Graham_Scan::calculEnveloppe()
 {
 	computeCentroid();
 	//Sort the Points following GrahamSort rule
-	std::sort(m_points.begin(), m_points.end(), GrahamSort(m_centroid));
+	enveloppe_ = _points;
+	std::sort(this->enveloppe_.begin(), enveloppe_.end(), GrahamSort(centroid_));
+	std::vector<Point*>::iterator sInit = enveloppe_.begin(), pivot = sInit;
+	bool avance(false);
+	do
+	{
+		std::vector<Point*>::iterator suiv = pivot , prec = pivot;
+		if (pivot == enveloppe_.begin())
+		{
+			prec = enveloppe_.end() - 1;
+			suiv = pivot + 1;
+		}
+		else if (pivot == enveloppe_.end() - 1)
+		{
+			suiv = enveloppe_.begin();
+			prec = pivot - 1;
+		}
+		else
+		{
+			prec = pivot - 1;
+			suiv = pivot + 1;
+		}
+		if (Graham_Scan::OrientedAngle(**prec, **pivot, **suiv) <= M_PI) //Si le pivot est convexe
+		{
+			pivot = suiv;
+			avance = true;
+		}
+		else
+		{
+			sInit = prec;
+			enveloppe_.erase(pivot);
+			pivot = sInit;
+			avance = false;
+		}
+	} while (pivot != sInit || !avance);
 }
 
 //
@@ -17,13 +49,13 @@ void Graham_Scan::computeCentroid()
 {
 	float sumX(0), sumY(0);
 
-	for(auto point : m_points) 
+	for(auto& point : _points) 
 	{
 		sumX += point->getX();
 		sumY += point->getY();
 	}
 
-	m_centroid = new Point(sumX / m_points.size(), sumY / m_points.size());
+	centroid_ = new Point(sumX / _points.size(), sumY / _points.size());
 }
 
 double Graham_Scan::OrientedAngle(const Point& a, const Point& b, const Point& c)

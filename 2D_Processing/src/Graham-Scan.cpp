@@ -28,7 +28,7 @@ void Graham_Scan::calculEnveloppe()
 			prec = pivot - 1;
 			suiv = pivot + 1;
 		}
-		if (Graham_Scan::OrientedAngle(**prec, **pivot, **suiv) <= M_PI) //Si le pivot est convexe
+		if (Graham_Scan::OrientedAngle(**suiv, **pivot, **prec) <= M_PI) //Si le pivot est convexe
 		{
 			pivot = suiv;
 			avance = true;

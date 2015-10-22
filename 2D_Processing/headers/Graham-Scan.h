@@ -29,7 +29,7 @@ typedef struct GrahamSort
 	
 	bool operator()(Point* Pi, Point* Pj)
 	{
-		Point* X(new Point(barycentre_->getX(), barycentre_->getY() + 1));
+		Point* X(new Point(barycentre_->getX() + 1280, barycentre_->getY()));
 		double PiAngle(Graham_Scan::OrientedAngle(*X, *barycentre_, *Pi))
 			, PjAngle(Graham_Scan::OrientedAngle(*X, *barycentre_, *Pj));
 		

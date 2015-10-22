@@ -278,14 +278,12 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 	case 'j':
 	{
-		/*
 		Jarvis j(currentLine->getPoints());
 		j.computeJarvis();
 		for(auto& point : j.getEnveloppe()) {
 			std::cout << "Enveloppe : " << point->getX() << ", " << point->getY() << std::endl;
 		}
 		currentJarvisPoints = new LineStrip(j.getEnveloppe());
-		*/
 		break;
 	}
 	case 127:

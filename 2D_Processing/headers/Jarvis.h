@@ -8,12 +8,11 @@
 
 class Jarvis : public LineStrip {
 private:
-	//std::vector<Point> m_points;
 	std::vector<Point*> m_enveloppe;
 
 public:
-	Jarvis() : LineStrip(){}
-	Jarvis(std::vector<Point*> points);
+	Jarvis() : LineStrip() {}
+	Jarvis(std::vector<Point*> points) { _points = points; }
 
 	void computeJarvis();
 	void addPoint(Point& const point);

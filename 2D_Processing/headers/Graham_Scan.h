@@ -13,6 +13,7 @@ private:
 	std::vector<Point*> enveloppe_;
 
 public:
+	Graham_Scan() {}
 	Graham_Scan(std::vector<Point*> points) : LineStrip(points) {}
 
 	void calculEnveloppe();

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include "TriangleStrip.h"
 
@@ -13,5 +14,4 @@ public:
 	Triangulation2D_qcq(std::vector<Point*> points);
 
 	void computeTriangulation();
-	void addPoint(Point& const point);
 };

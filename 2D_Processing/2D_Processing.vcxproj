@@ -16,6 +16,7 @@
     <ClCompile Include="src\Line.cpp" />
     <ClCompile Include="src\LineStrip.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Triangulation2D_qcq.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Graham_Scan.h" />

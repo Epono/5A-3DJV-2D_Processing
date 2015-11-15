@@ -7,10 +7,11 @@ double angle(const Point& a, const Point& b) {
 		, vecVY(b.getY())
 		, det(vecUX*vecVY - vecUY*vecVX)
 		, dot(vecUX*vecVX + vecUY*vecVY);
-	double angle = det < 0 ? 2 * M_PI + std::atan2(det, dot) : std::atan2(det, dot);
+	double angle = det <= 0 ? 2 * M_PI + std::atan2(det, dot) : std::atan2(det, dot);
 	return angle;
 }
 
+// TODO: Reste des bugs chelou
 void Jarvis::computeJarvis() {
 	m_enveloppe.clear();
 

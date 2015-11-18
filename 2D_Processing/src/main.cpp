@@ -24,6 +24,8 @@ LineStrip *currentJarvisPoints = nullptr;
 Jarvis* jarvis;
 LineStrip *currentGrahamPoints = nullptr;
 Graham_Scan* graham_scan;
+LineStrip *currentTriangulation2D_qcqPoints = nullptr;
+Triangulation2D_qcq* triangulation2D_qcq;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -85,6 +87,7 @@ int main(int argc, char **argv) {
 	currentLine = new LineStrip();
 	jarvis = new Jarvis();
 	graham_scan = new Graham_Scan();
+	triangulation2D_qcq = new Triangulation2D_qcq();
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
 	createMenu();							// Creates the menu available via right-click
@@ -111,7 +114,7 @@ void display() {
 		drawLineStrip(LineStrip(jarvis->getEnveloppe()), 2, true);
 		break;
 	case TRIANGULATION2D_QCQ:
-		//drawTriangleStrip(*currentJarvisPoints, 2);
+		drawTriangleStrip(*triangulation2D_qcq, 2);
 		break;
 	case NONE:
 		break;
@@ -189,6 +192,8 @@ void mouse(int button, int state, int x, int y) {
 		jarvis->computeJarvis();
 		break;
 	case TRIANGULATION2D_QCQ:
+		triangulation2D_qcq->setPoints(currentLine->getPoints());
+		triangulation2D_qcq->computeTriangulation();
 		break;
 	case NONE:
 		break;
@@ -263,6 +268,7 @@ void motion(int x, int y) {
 		jarvis->computeJarvis();
 		break;
 	case TRIANGULATION2D_QCQ:
+		triangulation2D_qcq->computeTriangulation();
 		break;
 	case NONE:
 		break;
@@ -338,7 +344,7 @@ void keyboard(unsigned char key, int x, int y) {
 			g.calculEnveloppe();
 			currentGrahamPoints = new LineStrip(g.getEnveloppe());
 			break;
-		}
+	}
 #endif
 	case 'j':
 		currentAlgorithm = JARVIS;
@@ -350,8 +356,13 @@ void keyboard(unsigned char key, int x, int y) {
 			Jarvis j(currentLine->getPoints());
 			j.computeJarvis();
 			currentJarvisPoints = new LineStrip(j.getEnveloppe());
-		}
+}
 #endif
+		break;
+	case 'i':
+		currentAlgorithm = TRIANGULATION2D_QCQ;
+		triangulation2D_qcq->setPoints(currentLine->getPoints());
+		triangulation2D_qcq->computeTriangulation();
 		break;
 	case 127:
 		// deletes selected point
@@ -360,6 +371,7 @@ void keyboard(unsigned char key, int x, int y) {
 			points.erase(points.begin() + windowVerticeToMove);
 		}
 		windowVerticeToMove = -1;
+		//TODO: refresh les algos
 		break;
 	case 27:
 		exit(0);
@@ -506,7 +518,7 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 
 	glLineWidth(lineSize);
 	glColor3f(1.0f, 0.0f, 0.0f);		// Sets the drawing color
-	glBegin(GL_TRIANGLES);
+	glBegin(GL_LINE_STRIP);
 	for(auto &t : triangleStrip.getTriangles()) {
 		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
 		glVertex2f(t->getPointB()->getX(), t->getPointB()->getY());

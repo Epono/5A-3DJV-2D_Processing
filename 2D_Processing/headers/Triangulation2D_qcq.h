@@ -6,7 +6,7 @@
 
 #include "TriangleStrip.h"
 
-class Triangulation2D_qcq : TriangleStrip {
+class Triangulation2D_qcq : public TriangleStrip {
 private:
 
 public:

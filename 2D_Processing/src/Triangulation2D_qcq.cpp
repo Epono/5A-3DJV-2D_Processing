@@ -1,7 +1,7 @@
 #include "Triangulation2D_qcq.h"
 #include "Line.h"
 
-#define LOG_Triangulation2D_qcq 1
+#define LOG_Triangulation2D_qcq 0
 
 bool myComparator(Point* a, Point* b) {
 	return (a->getX() != b->getX() ? a->getX() < b->getX() : a->getY() > b->getY());

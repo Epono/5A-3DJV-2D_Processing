@@ -1,9 +1,5 @@
 #include "Jarvis.h"
 
-Jarvis::Jarvis(std::vector<Point*> points) {
-	_points = points;
-}
-
 double angle(const Point& a, const Point& b) {
 	double vecUX(a.getX())
 		, vecUY(a.getY())
@@ -11,15 +7,22 @@ double angle(const Point& a, const Point& b) {
 		, vecVY(b.getY())
 		, det(vecUX*vecVY - vecUY*vecVX)
 		, dot(vecUX*vecVX + vecUY*vecVY);
-	double angle = det < 0 ? 2 * M_PI + std::atan2(det, dot) : std::atan2(det, dot);
+	double angle = det <= 0 ? 2 * M_PI + std::atan2(det, dot) : std::atan2(det, dot);
 	return angle;
 }
 
+// TODO: Reste des bugs chelou
 void Jarvis::computeJarvis() {
+	m_enveloppe.clear();
+
+	if(_points.size() < 2) {
+		return;
+	}
+
 	Point start = Point(_points.at(0)->getY(), _points.at(0)->getY());
 	int i0 = 0;
 
-	for(int iterationDeMonZboub = 1; iterationDeMonZboub < _points.size(); iterationDeMonZboub++) {
+	for(unsigned int iterationDeMonZboub = 1; iterationDeMonZboub < _points.size(); iterationDeMonZboub++) {
 		Point& point = *(_points.at(iterationDeMonZboub));
 		if(point.getX() < start.getX() || (point.getX() == start.getX() && point.getY() < start.getY())) {
 			i0 = iterationDeMonZboub;
@@ -32,7 +35,7 @@ void Jarvis::computeJarvis() {
 
 	do {
 		m_enveloppe.push_back(_points.at(i));
-		int j;
+		unsigned int j;
 		if(i == 0) {
 			j = 1;
 		}

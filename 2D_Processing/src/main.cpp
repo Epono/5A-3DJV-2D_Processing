@@ -5,25 +5,36 @@
 #include <vector>
 #include <iostream>
 
+#include <memory>
+
 #include <math.h>
 #include "utils.h"
 #include "Point.h"
 #include "LineStrip.h"
-#include "Graham-Scan.h"
+#include "Graham_Scan.h"
 #include "Jarvis.h"
+#include "Triangulation2D_qcq.h"
+#include "Voronoi.h"
 
-int creationState = waitingForFirstClick;
+creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
+algorithm currentAlgorithm = NONE;
 
 std::vector<LineStrip*> lines;
 LineStrip *currentLine = nullptr;
 LineStrip *currentJarvisPoints = nullptr;
+Jarvis* jarvis;
 LineStrip *currentGrahamPoints = nullptr;
+Graham_Scan* graham_scan;
+LineStrip *currentTriangulation2D_qcqPoints = nullptr;
+Triangulation2D_qcq* triangulation2D_qcq;
+Voronoi* voronoi;
+LineStrip *areaVoronoi = nullptr;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
-bool hideControlPoints = false;
 float pas = 20;
 color_rgb dessinColor = color_rgb(1.f, 0.f, 0.f);
+const float DEG2RAD = M_PI / 180;
 
 Point clicked;
 
@@ -43,7 +54,9 @@ void colorPicking(int option);
 void setPolygonColor(float colors[3], float r, float g, float b);
 void write();										// Writes on the top left what's happening
 
-void drawCurve(LineStrip& line, int lineSize, bool drawCurve);
+void drawLineStrip(LineStrip& line, int lineSize, bool drawCurve);
+void drawTriangleStrip(TriangleStrip& triangles, int lineSize);
+void drawCircle(float radius, Point& center);
 
 void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
@@ -51,6 +64,8 @@ void rotate(float angle);
 
 #define WIDTH 1280
 #define HEIGHT 720
+
+#define USE_DRAW_V2 TRUE
 
 int main(int argc, char **argv) {
 	//Glut and Window Initialization
@@ -75,6 +90,10 @@ int main(int argc, char **argv) {
 	glutMotionFunc(motion);
 
 	currentLine = new LineStrip();
+	jarvis = new Jarvis();
+	graham_scan = new Graham_Scan();
+	triangulation2D_qcq = new Triangulation2D_qcq();
+	voronoi = new Voronoi();
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
 	createMenu();							// Creates the menu available via right-click
@@ -92,14 +111,39 @@ void display() {
 
 	write();
 
-	//for(auto &l : lines)
-	//	drawCurve(*l, 2, false);
+#if USE_DRAW_V2
+	switch(currentAlgorithm) {
+	case GRAHAM_SCAN:
+		drawLineStrip(*currentGrahamPoints, 2, true);
+		break;
+	case JARVIS:
+		drawLineStrip(LineStrip(jarvis->getEnveloppe()), 2, true);
+		break;
+	case TRIANGULATION2D_QCQ:
+		drawTriangleStrip(*triangulation2D_qcq, 2);
+		break;
+	case VORONOI:
+		//drawLineStrip(LineStrip(voronoi->getArea()), 2, true);
+		drawLineStrip(LineStrip(voronoi->getPoints()), 1, true);
+		drawLineStrip(LineStrip(voronoi->getMediatriceP()), 2, true);
+		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(0));
+		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(1));
+		drawLineStrip(LineStrip(voronoi->getIntersect()),2,true);
+		break;
+	case NONE:
+		break;
+	default:
+		break;
+	}
+	drawLineStrip(*currentLine, 2, false);
+#else
 	if(currentLine != nullptr)
-		drawCurve(*currentLine, 2, false);
+		drawLineStrip(*currentLine, 2, false);
 	if(currentJarvisPoints != nullptr)
-		drawCurve(*currentJarvisPoints, 2, true);
-	if (currentGrahamPoints != nullptr)
-		drawCurve(*currentGrahamPoints, 2, true);
+		drawLineStrip(*currentJarvisPoints, 2, true);
+	if(currentGrahamPoints != nullptr)
+		drawLineStrip(*currentGrahamPoints, 2, true);
+#endif
 
 	glutSwapBuffers();				// Double buffer ?
 	glFlush();						// Forces refresh ?
@@ -115,20 +159,20 @@ void mouse(int button, int state, int x, int y) {
 	if(currentLine != nullptr) {
 		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
 			presse = 1;
-			switch(creationState) {
-			case pending:
+			switch(currentCreationState) {
+			case PENDING:
 				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
 				break;
-			case waitingForFirstClick:
-				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
-				currentLine->addPoint(point);
-				creationState++;
-				break;
-			case waitingForNextClick:
+			case WAITING_FOR_FIRST_CLICK:
 				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
 				currentLine->addPoint(point);
+				currentCreationState = WAITING_FOR_NEXT_CLICK;;
 				break;
-			case selectPoint:
+			case WAITING_FOR_NEXT_CLICK:
+				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
+				currentLine->addPoint(point);
+				break;
+			case SELECT_POINT:
 				break;
 			}
 		}
@@ -137,7 +181,7 @@ void mouse(int button, int state, int x, int y) {
 				presse = 0;
 				windowVerticeToMove = -1;
 				std::vector<Point*>& points = currentLine->getPoints();
-				if(creationState == selectPoint) {
+				if(currentCreationState == SELECT_POINT) {
 					for(unsigned int i = 0; i < points.size(); i++) {
 						float tempX = points.at(i)->getX();
 						float tempY = points.at(i)->getY();
@@ -152,26 +196,48 @@ void mouse(int button, int state, int x, int y) {
 		}
 	}
 
+	switch(currentAlgorithm) {
+	case GRAHAM_SCAN:
+		graham_scan->setPoints(currentLine->getPoints());
+		graham_scan->calculEnveloppe();
+		break;
+	case JARVIS:
+		jarvis->setPoints(currentLine->getPoints());
+		jarvis->computeJarvis();
+		break;
+	case TRIANGULATION2D_QCQ:
+		triangulation2D_qcq->setPoints(currentLine->getPoints());
+		triangulation2D_qcq->computeTriangulation();
+		break;
+	case VORONOI:
+		
+		break;
+	case NONE:
+		break;
+	default:
+		break;
+	}
+
 	glutPostRedisplay();		// Refresh display
 }
 
 void motion(int x, int y) {
 	y = HEIGHT - y;
-	if(creationState == selectPoint) {
+	if(currentCreationState == SELECT_POINT) {
 		if(windowVerticeToMove != -1) {
 			std::vector<Point*>& points = currentLine->getPoints();
 			points.at(windowVerticeToMove)->setX(x);
 			points.at(windowVerticeToMove)->setY(y);
 		}
 	}
-	else if(creationState == scaling) {
+	else if(currentCreationState == SCALING) {
 		float xOffset = clicked.getX() - x;
 		float yOffset = clicked.getY() - y;
 		scale(1 - (xOffset / 500), 1 + (yOffset / 500));
 		clicked.setX(x);
 		clicked.setY(y);
 	}
-	else if(creationState == rotating) {
+	else if(currentCreationState == ROTATING) {
 		float sumX = 0;
 		float sumY = 0;
 
@@ -203,12 +269,31 @@ void motion(int x, int y) {
 		clicked.setX(x);
 		clicked.setY(y);
 	}
-	else if(creationState == translating) {
+	else if(currentCreationState == TRANSLATING) {
 		float xOffset = clicked.getX() - x;
 		float yOffset = clicked.getY() - y;
 		translate(-xOffset, -yOffset);
 		clicked.setX(x);
 		clicked.setY(y);
+	}
+
+	switch(currentAlgorithm) {
+	case GRAHAM_SCAN:
+		graham_scan->calculEnveloppe();
+		break;
+	case JARVIS:
+		jarvis->computeJarvis();
+		break;
+	case TRIANGULATION2D_QCQ:
+		triangulation2D_qcq->computeTriangulation();
+		break;
+	case VORONOI:
+		//TODO
+		break;
+	case NONE:
+		break;
+	default:
+		break;
 	}
 
 	glutPostRedisplay(); // Rafraichissement de l'affichage
@@ -222,36 +307,32 @@ void motion(int x, int y) {
 void keyboard(unsigned char key, int x, int y) {
 	switch(key) {
 	case 'd': // Switch to connected strip lines creation
-		if(creationState == selectPoint) {
-			creationState = waitingForNextClick;
+		if(currentCreationState == SELECT_POINT) {
+			currentCreationState = WAITING_FOR_NEXT_CLICK;
 		}
-		else if(creationState != waitingForFirstClick) {
+		else if(currentCreationState != WAITING_FOR_FIRST_CLICK) {
 			printf("Switching to window creation\n");
-			creationState = waitingForFirstClick;
+			currentCreationState = WAITING_FOR_FIRST_CLICK;
 		}
 		break;
 	case 'v': // Validates
-		creationState = waitingForFirstClick;
+		currentCreationState = WAITING_FOR_FIRST_CLICK;
 		if(currentLine != nullptr) {
 			lines.push_back(currentLine);
 			currentLine = new LineStrip();
 		}
 		break;
 	case 'c': // Clear the window
-		creationState = waitingForFirstClick;
+		currentCreationState = WAITING_FOR_FIRST_CLICK;
 		lines.clear();
 		currentLine = new LineStrip();
 		break;
 	case 's':
 		// select point
-		if(creationState != selectPoint) {
+		if(currentCreationState != SELECT_POINT) {
 			printf("Switching to select point\n");
-			creationState = selectPoint;
+			currentCreationState = SELECT_POINT;
 		}
-		break;
-	case 'h':
-		// hide control points
-		hideControlPoints = !hideControlPoints;
 		break;
 	case '-':
 		if(pas > 0) --pas;
@@ -261,31 +342,55 @@ void keyboard(unsigned char key, int x, int y) {
 		++pas;
 		break;
 	case 't':
-		creationState = translating;
+		currentCreationState = TRANSLATING;
 		break;
 	case 'r':
-		creationState = rotating;
+		currentCreationState = ROTATING;
 		break;
 	case 'o':
-		creationState = scaling;
+		currentCreationState = SCALING;
+		break;
+	case 'n':
+		currentAlgorithm = NONE;
+		break;
+	case 'm':
+		currentAlgorithm = VORONOI;
+		std::cout << "M is pressed" << std::endl;
+		//voronoi->DefineArea(currentLine->getPoints());
+		voronoi->VoronoiAlgorithm(currentLine->getPoints());
+
 		break;
 	case 'g':
-	{
-		Graham_Scan g(currentLine->getPoints());
-		g.calculEnveloppe();
-		currentGrahamPoints = new LineStrip(g.getEnveloppe());
-		break;
+		currentAlgorithm = GRAHAM_SCAN;
+#if USE_DRAW_V2
+		graham_scan->setPoints(currentLine->getPoints());
+		graham_scan->calculEnveloppe();
+#else
+		{
+			Graham_Scan g(currentLine->getPoints());
+			g.calculEnveloppe();
+			currentGrahamPoints = new LineStrip(g.getEnveloppe());
+			break;
 	}
+#endif
 	case 'j':
-	{
-		Jarvis j(currentLine->getPoints());
-		j.computeJarvis();
-		for(auto& point : j.getEnveloppe()) {
-			std::cout << "Enveloppe : " << point->getX() << ", " << point->getY() << std::endl;
-		}
-		currentJarvisPoints = new LineStrip(j.getEnveloppe());
+		currentAlgorithm = JARVIS;
+#if USE_DRAW_V2
+		jarvis->setPoints(currentLine->getPoints());
+		jarvis->computeJarvis();
+#else
+		{
+			Jarvis j(currentLine->getPoints());
+			j.computeJarvis();
+			currentJarvisPoints = new LineStrip(j.getEnveloppe());
+}
+#endif
 		break;
-	}
+	case 'i':
+		currentAlgorithm = TRIANGULATION2D_QCQ;
+		triangulation2D_qcq->setPoints(currentLine->getPoints());
+		triangulation2D_qcq->computeTriangulation();
+		break;
 	case 127:
 		// deletes selected point
 		if(windowVerticeToMove != -1) {
@@ -293,6 +398,7 @@ void keyboard(unsigned char key, int x, int y) {
 			points.erase(points.begin() + windowVerticeToMove);
 		}
 		windowVerticeToMove = -1;
+		//TODO: refresh les algos
 		break;
 	case 27:
 		exit(0);
@@ -390,15 +496,6 @@ void menu(int opt) {
 	case 2:
 		std::cout << "Graham-Scan Implem" << std::endl;
 		break;
-		/*
-		case 4:
-		std::cout << "Nouvelle courbe" << std::endl;
-		if(currentLine != nullptr)
-		lines.push_back(currentLine);
-		currentLine = new LineStrip();
-		creationState = waitingForFirstClick;
-		break;
-		*/
 	default:
 		printf("What ? %d choisie mais pas d'option\n", opt);
 		break;
@@ -407,46 +504,85 @@ void menu(int opt) {
 }
 
 void setPolygonColor(float colors[3], float r, float g, float b) {
-	*colors = r;
-	*(colors + 1) = g;
-	*(colors + 2) = b;
+	colors[0] = r;
+	colors[1] = g;
+	colors[2] = b;
 }
 
-void drawCurve(LineStrip& line, int lineSize, bool drawLine) {
+void drawLineStrip(LineStrip& lineStrip, int lineSize, bool drawLine) {
+	if(lineStrip.getPoints().empty()) {
+		return;
+	}
+
 	glLineWidth(lineSize);
 	glColor3f(1.0f, 0.0f, 0.0f);		// Sets the drawing color
-	if(!hideControlPoints) {
-		if(drawLine) {
-			// Draws line strip
-			glBegin(GL_LINE_STRIP);
-			//for(auto &p : line.getPoints())
-			//	glVertex2f(p.getX(), p.getY());
-			for(int i = 0; i < line.getPoints().size(); i++) {
-				Point p = *(line.getPoints().at(i));
-				glVertex2f(p.getX(), p.getY());
-			}
-			glVertex2f(line.getPoints().at(0)->getX(), line.getPoints().at(0)->getY());
-			glEnd();
-		}
-
-		// Draws vertices of the connected lines strip
-		glBegin(GL_POINTS);
-		for(auto &p : line.getPoints())
+	if(drawLine) {
+		// Draws line strip
+		glBegin(GL_LINE_STRIP);
+		for(auto &p : lineStrip.getPoints()) {
 			glVertex2f(p->getX(), p->getY());
+		}
+		glVertex2f(lineStrip.getPoints().at(0)->getX(), lineStrip.getPoints().at(0)->getY());
 		glEnd();
 	}
-	if(line.getPoints().size() > 2) {
-		color_rgb c = line.getColor();
+
+	// Draws vertices of the connected lines strip
+	glBegin(GL_POINTS);
+	for(auto &p : lineStrip.getPoints())
+		glVertex2f(p->getX(), p->getY());
+	glEnd();
+
+	if(lineStrip.getPoints().size() > 2) {
+		color_rgb c = lineStrip.getColor();
 		glColor3f(c._r, c._g, c._b);		// Sets the drawing color
 	}
 }
 
+void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
+	if(triangleStrip.getPoints().empty()) {
+		return;
+	}
+
+	glLineWidth(lineSize);
+	glColor3f(1.0f, 0.0f, 0.0f);		// Sets the drawing color
+	glBegin(GL_LINE_STRIP);
+	for(auto &t : triangleStrip.getTriangles()) {
+		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
+		glVertex2f(t->getPointB()->getX(), t->getPointB()->getY());
+		glVertex2f(t->getPointC()->getX(), t->getPointC()->getY());
+	}
+	glEnd();
+
+	// Draws vertices of the connected lines strip
+	glBegin(GL_POINTS);
+	for(auto &p : triangleStrip.getPoints()) {
+		glVertex2f(p->getX(), p->getY());
+	}
+	glEnd();
+
+	if(triangleStrip.getPoints().size() > 2) {
+		color_rgb c = triangleStrip.getColor();
+		glColor3f(c._r, c._g, c._b);		// Sets the drawing color
+	}
+}
+
+void drawCircle(float radius, Point& center) {
+	glBegin(GL_LINE_LOOP);
+
+	for (int i = 0; i < 360; i++) {
+		float degInRad = i*DEG2RAD;
+		glVertex2f(center.getX() + cos(degInRad)*radius, center.getY() + sin(degInRad)*radius);
+	}
+
+	glEnd();
+}
+
 void write() {
 	char* truc;
-	if(creationState == selectPoint) {
+	if(currentCreationState == SELECT_POINT) {
 		truc = "Selecting point";
 	}
-	else if(creationState == waitingForFirstClick || creationState == waitingForNextClick) {
+	else if(currentCreationState == WAITING_FOR_FIRST_CLICK || currentCreationState == WAITING_FOR_NEXT_CLICK) {
 		truc = "Drawing lines";
 	}
 	else {

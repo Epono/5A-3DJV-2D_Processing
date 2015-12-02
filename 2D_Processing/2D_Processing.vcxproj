@@ -16,6 +16,7 @@
     <ClCompile Include="src\Line.cpp" />
     <ClCompile Include="src\LineStrip.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Triangulation2D_Delaunay_Bowyer_Watson.cpp" />
     <ClCompile Include="src\Triangulation2D_qcq.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -26,6 +27,7 @@
     <ClInclude Include="headers\Point.h" />
     <ClInclude Include="headers\Triangle.h" />
     <ClInclude Include="headers\TriangleStrip.h" />
+    <ClInclude Include="headers\Triangulation2D_Delaunay_Bowyer_Watson.h" />
     <ClInclude Include="headers\Triangulation2D_qcq.h" />
     <ClInclude Include="headers\utils.h" />
   </ItemGroup>

@@ -14,6 +14,7 @@
 #include "Graham_Scan.h"
 #include "Jarvis.h"
 #include "Triangulation2D_qcq.h"
+#include "Triangulation2D_Delaunay_Bowyer_Watson.h"
 
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
 algorithm currentAlgorithm = NONE;
@@ -56,9 +57,6 @@ void drawTriangleStrip(TriangleStrip& triangles, int lineSize);
 void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
 void rotate(float angle);
-
-#define WIDTH 1280
-#define HEIGHT 720
 
 #define USE_DRAW_V2 TRUE
 

@@ -2,6 +2,9 @@
 
 #include "Point.h"
 
+#define WIDTH 1280
+#define HEIGHT 720
+
 // Represents the state of the creation action
 typedef enum creationState {
 	WAITING_FOR_FIRST_CLICK,

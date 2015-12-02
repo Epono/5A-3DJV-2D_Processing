@@ -15,6 +15,7 @@
 #include "Jarvis.h"
 #include "Triangulation2D_qcq.h"
 #include "Triangulation2D_Delaunay_Bowyer_Watson.h"
+#include "Voronoi.h"
 
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
 algorithm currentAlgorithm = NONE;
@@ -27,11 +28,15 @@ LineStrip *currentGrahamPoints = nullptr;
 Graham_Scan* graham_scan;
 LineStrip *currentTriangulation2D_qcqPoints = nullptr;
 Triangulation2D_qcq* triangulation2D_qcq;
+Voronoi* voronoi;
+LineStrip *areaVoronoi = nullptr;
+
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
 float pas = 20;
 color_rgb dessinColor = color_rgb(1.f, 0.f, 0.f);
+const float DEG2RAD = M_PI / 180;
 
 Point clicked;
 
@@ -53,6 +58,8 @@ void write();										// Writes on the top left what's happening
 
 void drawLineStrip(LineStrip& line, int lineSize, bool drawCurve);
 void drawTriangleStrip(TriangleStrip& triangles, int lineSize);
+void drawCircle(float radius, Point& center);
+
 
 void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
@@ -86,6 +93,8 @@ int main(int argc, char **argv) {
 	jarvis = new Jarvis();
 	graham_scan = new Graham_Scan();
 	triangulation2D_qcq = new Triangulation2D_qcq();
+	voronoi = new Voronoi();
+
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
 	createMenu();							// Creates the menu available via right-click
@@ -113,6 +122,14 @@ void display() {
 		break;
 	case TRIANGULATION2D_QCQ:
 		drawTriangleStrip(*triangulation2D_qcq, 2);
+		break;
+	case VORONOI:
+		//drawLineStrip(LineStrip(voronoi->getArea()), 2, true);
+		drawLineStrip(LineStrip(voronoi->getPoints()), 1, true);
+		drawLineStrip(LineStrip(voronoi->getMediatriceP()), 2, true);
+		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(0));
+		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(1));
+		drawLineStrip(LineStrip(voronoi->getIntersect()),2,true);
 		break;
 	case NONE:
 		break;
@@ -193,6 +210,9 @@ void mouse(int button, int state, int x, int y) {
 		triangulation2D_qcq->setPoints(currentLine->getPoints());
 		triangulation2D_qcq->computeTriangulation();
 		break;
+	case VORONOI:
+		
+		break;
 	case NONE:
 		break;
 	default:
@@ -268,6 +288,9 @@ void motion(int x, int y) {
 	case TRIANGULATION2D_QCQ:
 		triangulation2D_qcq->computeTriangulation();
 		break;
+	case VORONOI:
+		//TODO
+		break;
 	case NONE:
 		break;
 	default:
@@ -330,6 +353,12 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'n':
 		currentAlgorithm = NONE;
+		break;
+	case 'm':
+		currentAlgorithm = VORONOI;
+		std::cout << "M is pressed" << std::endl;
+		//voronoi->DefineArea(currentLine->getPoints());
+		voronoi->VoronoiAlgorithm(currentLine->getPoints());
 		break;
 	case 'g':
 		currentAlgorithm = GRAHAM_SCAN;
@@ -535,6 +564,17 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 		color_rgb c = triangleStrip.getColor();
 		glColor3f(c._r, c._g, c._b);		// Sets the drawing color
 	}
+}
+
+void drawCircle(float radius, Point& center) {
+	glBegin(GL_LINE_LOOP);
+
+	for (int i = 0; i < 360; i++) {
+		float degInRad = i*DEG2RAD;
+		glVertex2f(center.getX() + cos(degInRad)*radius, center.getY() + sin(degInRad)*radius);
+	}
+
+	glEnd();
 }
 
 void write() {

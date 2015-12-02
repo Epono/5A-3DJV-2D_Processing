@@ -17,7 +17,9 @@
     <ClCompile Include="src\LineStrip.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Triangulation2D_Delaunay_Bowyer_Watson.cpp" />
+    <ClCompile Include="src\Point.cpp" />
     <ClCompile Include="src\Triangulation2D_qcq.cpp" />
+    <ClCompile Include="src\Voronoi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\Graham_Scan.h" />
@@ -30,6 +32,7 @@
     <ClInclude Include="headers\Triangulation2D_Delaunay_Bowyer_Watson.h" />
     <ClInclude Include="headers\Triangulation2D_qcq.h" />
     <ClInclude Include="headers\utils.h" />
+    <ClInclude Include="headers\Voronoi.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{37661A7A-2315-4816-BEAB-60186751FB56}</ProjectGuid>

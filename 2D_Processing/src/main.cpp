@@ -30,6 +30,7 @@ Triangulation2D_qcq* triangulation2D_qcq;
 Voronoi* voronoi;
 LineStrip *areaVoronoi = nullptr;
 
+
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
 float pas = 20;
@@ -57,6 +58,7 @@ void write();										// Writes on the top left what's happening
 void drawLineStrip(LineStrip& line, int lineSize, bool drawCurve);
 void drawTriangleStrip(TriangleStrip& triangles, int lineSize);
 void drawCircle(float radius, Point& center);
+
 
 void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
@@ -94,6 +96,7 @@ int main(int argc, char **argv) {
 	graham_scan = new Graham_Scan();
 	triangulation2D_qcq = new Triangulation2D_qcq();
 	voronoi = new Voronoi();
+
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
 	createMenu();							// Creates the menu available via right-click
@@ -358,7 +361,6 @@ void keyboard(unsigned char key, int x, int y) {
 		std::cout << "M is pressed" << std::endl;
 		//voronoi->DefineArea(currentLine->getPoints());
 		voronoi->VoronoiAlgorithm(currentLine->getPoints());
-
 		break;
 	case 'g':
 		currentAlgorithm = GRAHAM_SCAN;

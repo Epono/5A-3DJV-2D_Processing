@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Edge.cpp" />
     <ClCompile Include="src\Graham_Scan.cpp" />
     <ClCompile Include="src\Jarvis.cpp" />
     <ClCompile Include="src\Line.cpp" />
@@ -22,12 +21,15 @@
     <ClCompile Include="src\Voronoi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Edge.h" />
+    <ClCompile Include="src\Triangulation2D_qcq.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="headers\Graham_Scan.h" />
     <ClInclude Include="headers\Jarvis.h" />
     <ClInclude Include="headers\Line.h" />
     <ClInclude Include="headers\LineStrip.h" />
     <ClInclude Include="headers\Point.h" />
+    <ClInclude Include="headers\Triangle.h" />
     <ClInclude Include="headers\TriangleStrip.h" />
     <ClInclude Include="headers\Triangulation2D_qcq.h" />
     <ClInclude Include="headers\utils.h" />

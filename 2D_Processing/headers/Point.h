@@ -20,6 +20,11 @@ public:
 		}
 		return *this;
 	}
+	Point operator-() const { return Point(-_x, -_y); }
+	bool operator==(const Point& p)
+	{
+		return this->_x == p._x && this->_y == p._y;
+	}
 
 	double DistanceTo(const Point& p) {
 		return std::sqrt(std::pow(this->_x - p._x, 2)

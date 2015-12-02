@@ -1,7 +1,17 @@
 #include "Triangulation2D_qcq.h"
 #include "Line.h"
+#include "Graham_Scan.h"
 
 #define LOG_Triangulation2D_qcq 0
+
+namespace utils
+{
+	double dotProduct(const Point& vecU, const Point& vecV)
+	{
+		return vecU.getX()*vecV.getX() + vecU.getY()* vecV.getY();
+	}
+}
+
 
 bool myComparator(Point* a, Point* b) 
 {// Abscisse croissante ou ou ordonnee croissante si abscisses egales
@@ -52,7 +62,7 @@ void Triangulation2D_qcq::computeTriangulation()
 	}
 #endif
 
-	int i = minPoints.size();
+	int cpt = minPoints.size();
 	// Si tous les points sont colinéaires
 	if(minPoints.size() == _points.size()) 
 		return;
@@ -69,7 +79,7 @@ void Triangulation2D_qcq::computeTriangulation()
 	}
 #endif
 
-	Point* firstOtherPoint = _points.at(i);
+	Point* firstOtherPoint = _points.at(cpt);
 	std::vector<Line*> edgesToAdd;
 	for(auto& line : edges) 
 	{
@@ -82,29 +92,43 @@ void Triangulation2D_qcq::computeTriangulation()
 	}
 	edges.insert(edges.end(), edgesToAdd.begin(), edgesToAdd.end());
 
-	++i;
+	++cpt;
 
 	// Itération
 	// Pour chaque point restant 
-	for(i = i; i < _points.size(); ++i) 
+	for(; cpt < _points.size(); ++cpt) 
 	{
-		Point* tempPoint = _points.at(i);
-		std::vector<Line*> edgesToAdd2;
-		// Pour chaque arete existant visible par le point
-		for(auto& line : edges)
+		Point* nextPoint = _points.at(cpt);
+
+		// Calculer enveloppe convexe des pts deja traites
+		std::vector<Point*> tmp(_points.begin(), _points.begin() + cpt);
+		Graham_Scan enveloppe(tmp);
+		enveloppe.calculEnveloppe();
+		std::vector<Point*> pointsEnveloppe = enveloppe.getEnveloppe();
+		std::sort(pointsEnveloppe.begin(), pointsEnveloppe.end(), myComparator);
+		// Calculer les normales de chaque arete de l'enveloppe
+		// Puis produit scalaire avec le nouveau point
+		for (auto p = pointsEnveloppe.begin(); p != pointsEnveloppe.end(); ++p)
 		{
-			// Manque la condition
-			if(true) 
-			{
-				Line* lineTemp1 = new Line(line->getStartPoint(), tempPoint);
-				Line* lineTemp2 = new Line(line->getEndPoint(), tempPoint);
-				Triangle* t = new Triangle(line->getStartPoint(), line->getEndPoint(), tempPoint); // Si on le met sous les vectors ça bug u_u
-				edgesToAdd2.push_back(lineTemp1);
-				edgesToAdd2.push_back(lineTemp2);
-				_triangles.push_back(t);
-			}
+			Point normal, *p2;
+			Point edge;
+			if (p == pointsEnveloppe.end() - 1)
+				p2 = pointsEnveloppe.front();
+			else
+				p2 = *(p + 1);
+			// Edge coordinate
+			edge.setX(p2->getX() - (*p)->getX());
+			edge.setY(p2->getY() - (*p)->getY());
+			// Normale value
+			normal.setX(-edge.getY());
+			normal.setY(edge.getX());
+			if (utils::dotProduct(normal, edge) > 0)
+				normal = -(normal);
+			double angle1 = Graham_Scan::OrientedAngle(normal, **p, *nextPoint)
+				, angle2 = Graham_Scan::OrientedAngle(*nextPoint, **p, normal);
+			if (angle1 < M_PI_2 || angle2 < M_PI_2)
+				_triangles.push_back(new Triangle(*p, p2, nextPoint));
 		}
-		edges.insert(edges.end(), edgesToAdd2.begin(), edgesToAdd2.end());
 	}
 
 	edges.clear();

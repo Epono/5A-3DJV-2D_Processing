@@ -11,7 +11,7 @@ private:
 
 public:
 	Triangulation2D_qcq() : TriangleStrip() {}
-	Triangulation2D_qcq(std::vector<Point*> points);
+	Triangulation2D_qcq(const std::vector<Point>& points);
 
 	void computeTriangulation();
 };

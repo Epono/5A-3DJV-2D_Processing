@@ -33,7 +33,7 @@ bool MyLineComparatorEquals(Line& l1, Line& l2) {
 }
 
 bool MyLineComparatorLess(Line& l1, Line& l2) {
-	return (l1.getStartPoint()->getX() < l2.getStartPoint()->getX());
+	return (l1.getStartPoint().getX() < l2.getStartPoint().getX());
 }
 
 //subroutine triangulate
@@ -63,13 +63,13 @@ bool MyLineComparatorLess(Line& l1, Line& l2) {
 void Triangulation2D_Delaunay_Bowyer_Watson::computeTriangulation() {
 
 	// Créer un méga triangle qui contient tous les points
-	Triangle* supertriangle = new Triangle(new Point(-10 * WIDTH, -10 * HEIGHT), new Point(10 * WIDTH, -10 * HEIGHT), new Point(WIDTH / 2, 10 * HEIGHT));
+	Triangle supertriangle(Point(-10 * WIDTH, -10 * HEIGHT), Point(10 * WIDTH, -10 * HEIGHT), Point(WIDTH / 2, 10 * HEIGHT));
 	_triangles.push_back(supertriangle);
 
 	// Ajouter les points du triangle à la fin de la liste des points
-	_points.push_back(supertriangle->getPointA());
-	_points.push_back(supertriangle->getPointB());
-	_points.push_back(supertriangle->getPointC());
+	_points.push_back(supertriangle.getPointA());
+	_points.push_back(supertriangle.getPointB());
+	_points.push_back(supertriangle.getPointC());
 
 	// Pour chaque point de la liste
 	for(auto& point : _points) {
@@ -78,19 +78,19 @@ void Triangulation2D_Delaunay_Bowyer_Watson::computeTriangulation() {
 
 		// Pour chaque triangle dans la liste
 		for(int i = 0; i < _triangles.size(); ++i) {
-			Triangle* tempTriangle = _triangles.at(i);
+			Triangle tempTriangle = _triangles.at(i);
 			float radius;
 			Point center;
 
 			// Calculer le circumcircle center et le rayon du triangle
-			Circumcircle(*tempTriangle->getPointA(), *tempTriangle->getPointB(), *tempTriangle->getPointC(), center, radius);
+			Circumcircle(tempTriangle.getPointA(), tempTriangle.getPointB(), tempTriangle.getPointC(), center, radius);
 
 			// Si le point est dans le circumcircle
-			if(IsInsideCircle(center, radius, *point)) {
+			if(IsInsideCircle(center, radius, point)) {
 				// Ajouter les 3 aretes du triangle au edge buffer et retirer le triangle de la liste
-				Point* pointA = tempTriangle->getPointA();
-				Point* pointB = tempTriangle->getPointB();
-				Point* pointC = tempTriangle->getPointC();
+				Point pointA = tempTriangle.getPointA();
+				Point pointB = tempTriangle.getPointB();
+				Point pointC = tempTriangle.getPointC();
 
 				edgeBuffer.push_back(Line(pointA, pointB));
 				edgeBuffer.push_back(Line(pointB, pointC));
@@ -108,24 +108,24 @@ void Triangulation2D_Delaunay_Bowyer_Watson::computeTriangulation() {
 
 		// Ajouter tous les triangles formés par le point avec les aretes (edge buffer)
 		for(auto& edge : edgeBuffer) {
-			_triangles.push_back(new Triangle(point, edge.getStartPoint(), edge.getEndPoint()));
+			_triangles.push_back(Triangle(point, edge.getStartPoint(), edge.getEndPoint()));
 		}
 	}
 
 	// Supprimer tous les triangles qui utilisent un des sommets du supertriangle
 	//for(auto& triangle : _triangles) {
-	//	if(triangle->getPointA() == supertriangle->getPointA() || triangle->getPointA() == supertriangle->getPointB() || triangle->getPointA() == supertriangle->getPointC() ||
-	//	   triangle->getPointB() == supertriangle->getPointA() || triangle->getPointB() == supertriangle->getPointB() || triangle->getPointB() == supertriangle->getPointC() ||
-	//	   triangle->getPointC() == supertriangle->getPointA() || triangle->getPointC() == supertriangle->getPointB() || triangle->getPointC() == supertriangle->getPointC()) {
+	//	if(triangle.getPointA() == supertriangle.getPointA() || triangle.getPointA() == supertriangle.getPointB() || triangle.getPointA() == supertriangle.getPointC() ||
+	//	   triangle.getPointB() == supertriangle.getPointA() || triangle.getPointB() == supertriangle.getPointB() || triangle.getPointB() == supertriangle.getPointC() ||
+	//	   triangle.getPointC() == supertriangle.getPointA() || triangle.getPointC() == supertriangle.getPointB() || triangle.getPointC() == supertriangle.getPointC()) {
 	//	}
 	//}
 
 	//for(int i = 0; i < _triangles.size(); ++i) {
 	//	Triangle* triangle = _triangles.at(i);
 
-	//	if(triangle->getPointA() == supertriangle->getPointA() || triangle->getPointA() == supertriangle->getPointB() || triangle->getPointA() == supertriangle->getPointC() ||
-	//	   triangle->getPointB() == supertriangle->getPointA() || triangle->getPointB() == supertriangle->getPointB() || triangle->getPointB() == supertriangle->getPointC() ||
-	//	   triangle->getPointC() == supertriangle->getPointA() || triangle->getPointC() == supertriangle->getPointB() || triangle->getPointC() == supertriangle->getPointC()) {
+	//	if(triangle.getPointA() == supertriangle.getPointA() || triangle.getPointA() == supertriangle.getPointB() || triangle.getPointA() == supertriangle.getPointC() ||
+	//	   triangle.getPointB() == supertriangle.getPointA() || triangle.getPointB() == supertriangle.getPointB() || triangle.getPointB() == supertriangle.getPointC() ||
+	//	   triangle.getPointC() == supertriangle.getPointA() || triangle.getPointC() == supertriangle.getPointB() || triangle.getPointC() == supertriangle.getPointC()) {
 	//		_triangles.erase(_triangles.begin() + i);
 	//		//i--;
 	//	}
@@ -134,16 +134,16 @@ void Triangulation2D_Delaunay_Bowyer_Watson::computeTriangulation() {
 	//	}
 	//}
 
-	_triangles.erase(std::remove_if(_triangles.begin(), _triangles.end(), [supertriangle](Triangle* triangle) {
-		return triangle->getPointA() == supertriangle->getPointA() || triangle->getPointA() == supertriangle->getPointB() || triangle->getPointA() == supertriangle->getPointC() ||
-			triangle->getPointB() == supertriangle->getPointA() || triangle->getPointB() == supertriangle->getPointB() || triangle->getPointB() == supertriangle->getPointC() ||
-			triangle->getPointC() == supertriangle->getPointA() || triangle->getPointC() == supertriangle->getPointB() || triangle->getPointC() == supertriangle->getPointC();
+	_triangles.erase(std::remove_if(_triangles.begin(), _triangles.end(), [supertriangle](const Triangle& triangle) {
+		return triangle.getPointA() == supertriangle.getPointA() || triangle.getPointA() == supertriangle.getPointB() || triangle.getPointA() == supertriangle.getPointC() ||
+			triangle.getPointB() == supertriangle.getPointA() || triangle.getPointB() == supertriangle.getPointB() || triangle.getPointB() == supertriangle.getPointC() ||
+			triangle.getPointC() == supertriangle.getPointA() || triangle.getPointC() == supertriangle.getPointB() || triangle.getPointC() == supertriangle.getPointC();
 	}), _triangles.end());
 
 	//_triangles.erase(std::remove_if(_triangles.begin(), _triangles.end(), [](Triangle* triangle) {
-	//	return triangle->getPointA()->getX() < 0 || triangle->getPointA()->getY() < 0 || triangle->getPointA()->getX() > WIDTH || triangle->getPointA()->getY() > HEIGHT
-	//		|| triangle->getPointB()->getX() < 0 || triangle->getPointB()->getY() < 0 || triangle->getPointB()->getX() > WIDTH || triangle->getPointB()->getY() > HEIGHT
-	//		|| triangle->getPointC()->getX() < 0 || triangle->getPointC()->getY() < 0 || triangle->getPointC()->getX() > WIDTH || triangle->getPointC()->getY() > HEIGHT;
+	//	return triangle.getPointA().getX() < 0 || triangle.getPointA().getY() < 0 || triangle.getPointA().getX() > WIDTH || triangle.getPointA().getY() > HEIGHT
+	//		|| triangle.getPointB().getX() < 0 || triangle.getPointB().getY() < 0 || triangle.getPointB().getX() > WIDTH || triangle.getPointB().getY() > HEIGHT
+	//		|| triangle.getPointC().getX() < 0 || triangle.getPointC().getY() < 0 || triangle.getPointC().getX() > WIDTH || triangle.getPointC().getY() > HEIGHT;
 	//}), _triangles.end());
 
 	// Supprimer les sommets du supertriangle de la liste

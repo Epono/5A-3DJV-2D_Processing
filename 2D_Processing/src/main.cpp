@@ -22,16 +22,16 @@
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
 algorithm currentAlgorithm = NONE;
 
-std::vector<LineStrip*> lines;
-LineStrip *currentLine = nullptr;
-Jarvis* jarvis;
-LineStrip *currentGrahamPoints = nullptr;
-Graham_Scan* graham_scan;
-Triangulation2D_qcq* triangulation2D_qcq;
-Voronoi* voronoi;
-Triangulation2D_Delaunay_Bowyer_Watson* triangulation2D_Delaunay_Bowyer_Watson;
-Triangulation2D_Delaunay* triangulation2D_Delaunay;
-Delaunay* delaunay;
+std::vector<LineStrip> lines;
+LineStrip currentLine;
+Jarvis jarvis;
+LineStrip currentGrahamPoints;
+Graham_Scan graham_scan;
+Triangulation2D_qcq triangulation2D_qcq;
+Voronoi voronoi;
+Triangulation2D_Delaunay_Bowyer_Watson triangulation2D_Delaunay_Bowyer_Watson;
+Triangulation2D_Delaunay triangulation2D_Delaunay;
+Delaunay delaunay;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -57,9 +57,9 @@ void colorPicking(int option);
 void setPolygonColor(float colors[3], float r, float g, float b);
 void write();										// Writes on the top left what's happening
 
-void drawLineStrip(LineStrip& line, int lineSize, bool drawCurve);
-void drawTriangleStrip(TriangleStrip& triangles, int lineSize);
-void drawCircle(float radius, Point& center);
+void drawLineStrip(const LineStrip& , int , bool );
+void drawTriangleStrip(const TriangleStrip& , int );
+void drawCircle(float , const Point& );
 
 void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
@@ -89,14 +89,14 @@ int main(int argc, char **argv) {
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 
-	currentLine = new LineStrip();
-	jarvis = new Jarvis();
-	graham_scan = new Graham_Scan();
-	triangulation2D_qcq = new Triangulation2D_qcq();
-	voronoi = new Voronoi();
-	triangulation2D_Delaunay_Bowyer_Watson = new Triangulation2D_Delaunay_Bowyer_Watson();
-	triangulation2D_Delaunay = new Triangulation2D_Delaunay();
-	delaunay = new Delaunay();
+	//currentLine = new LineStrip();
+	//jarvis = new Jarvis();
+	//graham_scan = new Graham_Scan();
+	//triangulation2D_qcq = new Triangulation2D_qcq();
+	//voronoi = new Voronoi();
+	//triangulation2D_Delaunay_Bowyer_Watson = new Triangulation2D_Delaunay_Bowyer_Watson();
+	//triangulation2D_Delaunay = new Triangulation2D_Delaunay();
+	//delaunay = new Delaunay();
 
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
@@ -118,38 +118,38 @@ void display() {
 #if USE_DRAW_V2
 	switch(currentAlgorithm) {
 	case GRAHAM_SCAN:
-		drawLineStrip(*currentGrahamPoints, 2, true);
+		drawLineStrip(currentGrahamPoints, 2, true);
 		break;
 	case JARVIS:
-		drawLineStrip(LineStrip(jarvis->getEnveloppe()), 2, true);
+		//drawLineStrip(LineStrip(jarvis.getEnveloppe()), 2, true);
 		break;
 	case TRIANGULATION2D_QCQ:
-		drawTriangleStrip(*triangulation2D_qcq, 2);
+		drawTriangleStrip(triangulation2D_qcq, 2);
 		break;
 	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
-		drawTriangleStrip(*triangulation2D_Delaunay_Bowyer_Watson, 2);
+		drawTriangleStrip(triangulation2D_Delaunay_Bowyer_Watson, 2);
 		break;
 	case TRIANGULATION_2D_DELAUNAY:
-		drawTriangleStrip(*triangulation2D_Delaunay, 2);
+		drawTriangleStrip(triangulation2D_Delaunay, 2);
 		break;
 	case DELAUNAY:
 		//TODO:
 		//drawTriangleStrip(*delaunay, 2);
 		break;
 	case VORONOI:
-		//drawLineStrip(LineStrip(voronoi->getArea()), 2, true);
-		drawLineStrip(LineStrip(voronoi->getPoints()), 1, true);
-		drawLineStrip(LineStrip(voronoi->getMediatriceP()), 2, true);
-		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(0));
-		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(1));
-		drawLineStrip(LineStrip(voronoi->getIntersect()), 2, true);
+		//drawLineStrip(LineStrip(voronoi.getArea()), 2, true);
+		//drawLineStrip(LineStrip(voronoi.getPoints()), 1, true);
+		//drawLineStrip(LineStrip(voronoi.getMediatriceP()), 2, true);
+		//drawCircle(voronoi.getRadius().at(0), *voronoi.getActualPoint().at(0));
+		//drawCircle(voronoi.getRadius().at(0), *voronoi.getActualPoint().at(1));
+		//drawLineStrip(LineStrip(voronoi.getIntersect()), 2, true);
 		break;
 	case NONE:
 		break;
 	default:
 		break;
 	}
-	drawLineStrip(*currentLine, 2, false);
+	drawLineStrip(currentLine, 2, false);
 #else
 	if(currentLine != nullptr)
 		drawLineStrip(*currentLine, 2, false);
@@ -169,76 +169,79 @@ void display() {
 void mouse(int button, int state, int x, int y) {
 	y = HEIGHT - y;
 	clicked = Point(x, y);
-	Point* point = new Point(x, y);
-	if(currentLine != nullptr) {
-		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+	Point point(x, y);
+	if(!currentLine.isEmpty()) 
+	{
+		if(button == GLUT_LEFT_BUTTON && state == GLUT_UP) 
+		{
 			presse = 1;
-			switch(currentCreationState) {
+			switch(currentCreationState) 
+			{
 			case PENDING:
 				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
 				break;
 			case WAITING_FOR_FIRST_CLICK:
 				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
-				currentLine->addPoint(point);
+				currentLine.addPoint(point);
 				currentCreationState = WAITING_FOR_NEXT_CLICK;;
 				break;
 			case WAITING_FOR_NEXT_CLICK:
 				printf("Coords clicked (pending state) : (%d, %d)\n", x, y);
-				currentLine->addPoint(point);
+				currentLine.addPoint(point);
 				break;
 			case SELECT_POINT:
 				break;
 			}
 		}
-		if(currentLine->getPoints().size() > 0) {
-			if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		else if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) 
+		{
 				presse = 0;
 				windowVerticeToMove = -1;
-				std::vector<Point*>& points = currentLine->getPoints();
-				if(currentCreationState == SELECT_POINT) {
-					for(unsigned int i = 0; i < points.size(); i++) {
-						float tempX = points.at(i)->getX();
-						float tempY = points.at(i)->getY();
+				std::vector<Point> points = currentLine.getPoints();
+				if(currentCreationState == SELECT_POINT) 
+					for(unsigned int i = 0; i < points.size(); i++) 
+					{
+						float tempX = points.at(i).getX();
+						float tempY = points.at(i).getY();
 						int distance = 10;
-						if(abs(tempX - x) < distance && abs(tempY - y) < distance) {
+						if(abs(tempX - x) < distance && abs(tempY - y) < distance) 
+						{
 							windowVerticeToMove = i;
 							break;
 						}
 					}
-				}
-			}
 		}
 	}
 
 	switch(currentAlgorithm) {
 	case GRAHAM_SCAN:
-		graham_scan->setPoints(currentLine->getPoints());
-		graham_scan->calculEnveloppe();
+		graham_scan.setPoints(currentLine.getPoints());
+		graham_scan.calculEnveloppe();
 		break;
 	case JARVIS:
-		jarvis->setPoints(currentLine->getPoints());
-		jarvis->computeJarvis();
+		//jarvis.setPoints(currentLine.getPoints());
+		//jarvis.computeJarvis();
 		break;
 	case TRIANGULATION2D_QCQ:
-		triangulation2D_qcq->setPoints(currentLine->getPoints());
-		triangulation2D_qcq->computeTriangulation();
+		//triangulation2D_qcq.setPoints(currentLine.getPoints());
+		//triangulation2D_qcq.computeTriangulation();
 		break;
 	case VORONOI:
 
 		break;
 	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
-		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
-		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
+		//triangulation2D_Delaunay_Bowyer_Watson.setPoints(currentLine.getPoints());
+		//triangulation2D_Delaunay_Bowyer_Watson.computeTriangulation();
 		break;
 	case TRIANGULATION_2D_DELAUNAY:
-		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
-		triangulation2D_Delaunay->computeTriangulation();
+		//triangulation2D_Delaunay.setPoints(currentLine.getPoints());
+		//triangulation2D_Delaunay.computeTriangulation();
 		break;
 	case DELAUNAY:
 		//TODO:
-		delaunay->insertPoint(point);
-		delaunay->computeEdges();
-		delaunay->computeTriangles();
+		//delaunay.insertPoint(point);
+		//delaunay.computeEdges();
+		//delaunay.computeTriangles();
 		break;
 	case NONE:
 		break;
@@ -252,10 +255,11 @@ void mouse(int button, int state, int x, int y) {
 void motion(int x, int y) {
 	y = HEIGHT - y;
 	if(currentCreationState == SELECT_POINT) {
-		if(windowVerticeToMove != -1) {
-			std::vector<Point*>& points = currentLine->getPoints();
-			points.at(windowVerticeToMove)->setX(x);
-			points.at(windowVerticeToMove)->setY(y);
+		if(windowVerticeToMove != -1) 
+		{
+			std::vector<Point> points = currentLine.getPoints();
+			points.at(windowVerticeToMove).setX(x);
+			points.at(windowVerticeToMove).setY(y);
 		}
 	}
 	else if(currentCreationState == SCALING) {
@@ -270,10 +274,11 @@ void motion(int x, int y) {
 		float sumY = 0;
 
 		//Calcul du barycentre pour décaler
-		std::vector<Point*>& points = currentLine->getPoints();
-		for(unsigned int i = 0; i < points.size(); i++) {
-			sumX += points.at(i)->getX();
-			sumY += points.at(i)->getY();
+		std::vector<Point> points = currentLine.getPoints();
+		for(unsigned int i = 0; i < points.size(); i++) 
+		{
+			sumX += points.at(i).getX();
+			sumY += points.at(i).getY();
 		}
 
 		Point barycenter = {sumX / points.size(), sumY / points.size()};
@@ -307,27 +312,27 @@ void motion(int x, int y) {
 
 	switch(currentAlgorithm) {
 	case GRAHAM_SCAN:
-		graham_scan->calculEnveloppe();
+		graham_scan.calculEnveloppe();
 		break;
 	case JARVIS:
-		jarvis->computeJarvis();
+		jarvis.computeJarvis();
 		break;
 	case TRIANGULATION2D_QCQ:
-		triangulation2D_qcq->computeTriangulation();
+		triangulation2D_qcq.computeTriangulation();
 		break;
 	case VORONOI:
 		//TODO
 		break;
 	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
-		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
+		triangulation2D_Delaunay_Bowyer_Watson.computeTriangulation();
 		break;
 	case TRIANGULATION_2D_DELAUNAY:
-		triangulation2D_Delaunay->computeTriangulation();
+		triangulation2D_Delaunay.computeTriangulation();
 		break;
 	case DELAUNAY:
 		//TODO:
-		delaunay->computeEdges();
-		delaunay->computeTriangles();
+		delaunay.computeEdges();
+		delaunay.computeTriangles();
 		break;
 	case NONE:
 		break;
@@ -346,25 +351,28 @@ void motion(int x, int y) {
 void keyboard(unsigned char key, int x, int y) {
 	switch(key) {
 	case 'd': // Switch to connected strip lines creation
-		if(currentCreationState == SELECT_POINT) {
+		if(currentCreationState == SELECT_POINT)
+		{
 			currentCreationState = WAITING_FOR_NEXT_CLICK;
 		}
-		else if(currentCreationState != WAITING_FOR_FIRST_CLICK) {
+		else if(currentCreationState != WAITING_FOR_FIRST_CLICK) 
+		{
 			printf("Switching to window creation\n");
 			currentCreationState = WAITING_FOR_FIRST_CLICK;
 		}
 		break;
 	case 'v': // Validates
 		currentCreationState = WAITING_FOR_FIRST_CLICK;
-		if(currentLine != nullptr) {
+		if(!currentLine.isEmpty()) 
+		{
 			lines.push_back(currentLine);
-			currentLine = new LineStrip();
+			currentLine = LineStrip();
 		}
 		break;
 	case 'c': // Clear the window
 		currentCreationState = WAITING_FOR_FIRST_CLICK;
 		lines.clear();
-		currentLine = new LineStrip();
+		currentLine = LineStrip();
 		break;
 	case 's':
 		// select point
@@ -395,17 +403,17 @@ void keyboard(unsigned char key, int x, int y) {
 	case 'm':
 		currentAlgorithm = VORONOI;
 		std::cout << "M is pressed" << std::endl;
-		//voronoi->DefineArea(currentLine->getPoints());
-		voronoi->VoronoiAlgorithm(currentLine->getPoints());
+		//voronoi.DefineArea(currentLine.getPoints());
+		//voronoi.VoronoiAlgorithm(currentLine.getPoints());
 		break;
 	case 'g':
 		currentAlgorithm = GRAHAM_SCAN;
 #if USE_DRAW_V2
-		graham_scan->setPoints(currentLine->getPoints());
-		graham_scan->calculEnveloppe();
+		graham_scan.setPoints(currentLine.getPoints());
+		graham_scan.calculEnveloppe();
 #else
 		{
-			Graham_Scan g(currentLine->getPoints());
+			Graham_Scan g(currentLine.getPoints());
 			g.calculEnveloppe();
 			currentGrahamPoints = new LineStrip(g.getEnveloppe());
 			break;
@@ -414,11 +422,11 @@ void keyboard(unsigned char key, int x, int y) {
 	case 'j':
 		currentAlgorithm = JARVIS;
 #if USE_DRAW_V2
-		jarvis->setPoints(currentLine->getPoints());
-		jarvis->computeJarvis();
+		jarvis.setPoints(currentLine.getPoints());
+		jarvis.computeJarvis();
 #else
 		{
-			Jarvis j(currentLine->getPoints());
+			Jarvis j(currentLine.getPoints());
 			j.computeJarvis();
 			currentJarvisPoints = new LineStrip(j.getEnveloppe());
 }
@@ -426,31 +434,31 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	case 'i':
 		currentAlgorithm = TRIANGULATION2D_QCQ;
-		triangulation2D_qcq->setPoints(currentLine->getPoints());
-		triangulation2D_qcq->computeTriangulation();
+		//triangulation2D_qcq.setPoints(currentLine.getPoints());
+		triangulation2D_qcq.computeTriangulation();
 		break;
 	case 'b':
 		currentAlgorithm = TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON;
-		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
-		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
+		//triangulation2D_Delaunay_Bowyer_Watson.setPoints(currentLine.getPoints());
+		triangulation2D_Delaunay_Bowyer_Watson.computeTriangulation();
 		break;
 	case '1':
 		currentAlgorithm = TRIANGULATION_2D_DELAUNAY;
-		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
-		triangulation2D_Delaunay->computeTriangulation();
+		//triangulation2D_Delaunay.setPoints(currentLine.getPoints());
+		triangulation2D_Delaunay.computeTriangulation();
 		break;
 	case '2':
 		currentAlgorithm = DELAUNAY;
 		//TODO:
-		delaunay->computeEdges();
-		delaunay->computeTriangles();
-		//delaunay->computeTriangulation();
+		delaunay.computeEdges();
+		delaunay.computeTriangles();
+		//delaunay.computeTriangulation();
 		break;
 	case 127:
 		// deletes selected point
 		if(windowVerticeToMove != -1) {
-			std::vector<Point*>& points = currentLine->getPoints();
-			points.erase(points.begin() + windowVerticeToMove);
+			//std::vector<Point*>& points = currentLine.getPoints();
+			//points.erase(points.begin() + windowVerticeToMove);
 		}
 		windowVerticeToMove = -1;
 		//TODO: refresh les algos
@@ -558,42 +566,37 @@ void menu(int opt) {
 	display();
 }
 
-void setPolygonColor(float colors[3], float r, float g, float b) {
-	colors[0] = r;
-	colors[1] = g;
-	colors[2] = b;
-}
-
-void drawLineStrip(LineStrip& lineStrip, int lineSize, bool drawLine) {
-	if(lineStrip.getPoints().empty()) {
+void drawLineStrip(const LineStrip& lineStrip, int lineSize, bool drawLine) 
+{
+	if(lineStrip.isEmpty())
 		return;
-	}
 
 	glLineWidth(lineSize);
-	glColor3f(1.0f, 0.0f, 0.0f);		// Sets the drawing color
-	if(drawLine) {
+	glColor3f(1.0f, 0.0f, 0.0f);// Sets the drawing color
+	if(drawLine) 
+	{
 		// Draws line strip
 		glBegin(GL_LINE_STRIP);
-		for(auto &p : lineStrip.getPoints()) {
-			glVertex2f(p->getX(), p->getY());
-		}
-		glVertex2f(lineStrip.getPoints().at(0)->getX(), lineStrip.getPoints().at(0)->getY());
+		for(auto &p : lineStrip.getPoints()) 
+			glVertex2f(p.getX(), p.getY());
+		glVertex2f(lineStrip[0].getX(), lineStrip[0].getY());
 		glEnd();
 	}
 
 	// Draws vertices of the connected lines strip
 	glBegin(GL_POINTS);
 	for(auto &p : lineStrip.getPoints())
-		glVertex2f(p->getX(), p->getY());
+		glVertex2f(p.getX(), p.getY());
 	glEnd();
 
-	if(lineStrip.getPoints().size() > 2) {
+	if(lineStrip.getPoints().size() > 2) 
+	{
 		color_rgb c = lineStrip.getColor();
-		glColor3f(c._r, c._g, c._b);		// Sets the drawing color
+		glColor3f(c._r, c._g, c._b);// Sets the drawing color
 	}
 }
 
-void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
+void drawTriangleStrip(const TriangleStrip& triangleStrip, int lineSize) {
 	if(triangleStrip.getPoints().empty()) {
 		return;
 	}
@@ -602,17 +605,17 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 	glColor3f(1.0f, 0.0f, 0.0f);		// Sets the drawing color
 	glBegin(GL_LINE_STRIP);
 	for(auto &t : triangleStrip.getTriangles()) {
-		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
-		glVertex2f(t->getPointB()->getX(), t->getPointB()->getY());
-		glVertex2f(t->getPointC()->getX(), t->getPointC()->getY());
-		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
+		glVertex2f(t.getPointA().getX(), t.getPointA().getY());
+		glVertex2f(t.getPointB().getX(), t.getPointB().getY());
+		glVertex2f(t.getPointC().getX(), t.getPointC().getY());
+		glVertex2f(t.getPointA().getX(), t.getPointA().getY());
 	}
 	glEnd();
 
 	// Draws vertices of the connected lines strip
 	glBegin(GL_POINTS);
 	for(auto &p : triangleStrip.getPoints()) {
-		glVertex2f(p->getX(), p->getY());
+		glVertex2f(p.getX(), p.getY());
 	}
 	glEnd();
 
@@ -622,7 +625,7 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 	}
 }
 
-void drawCircle(float radius, Point& center) {
+void drawCircle(float radius, const Point& center) {
 	glBegin(GL_LINE_LOOP);
 
 	for(int i = 0; i < 360; i++) {
@@ -659,13 +662,13 @@ void translate(int xOffset, int yOffset) {
 		0, 1, yOffset
 	};
 
-	std::vector<Point*>& points = currentLine->getPoints();
+	std::vector<Point> points;// = currentLine.getPoints();
 	for(unsigned int i = 0; i < points.size(); i++) {
-		x = points.at(i)->getX();
-		y = points.at(i)->getY();
+		x = points.at(i).getX();
+		y = points.at(i).getY();
 
-		points.at(i)->setX((x * matrix[0]) + (y * matrix[1]) + (1 * matrix[2]));
-		points.at(i)->setY((x * matrix[3]) + (y * matrix[4]) + (1 * matrix[5]));
+		points.at(i).setX((x * matrix[0]) + (y * matrix[1]) + (1 * matrix[2]));
+		points.at(i).setY((x * matrix[3]) + (y * matrix[4]) + (1 * matrix[5]));
 	}
 }
 
@@ -689,29 +692,29 @@ void scale(float scaleX, float scaleY) {
 	float sumY = 0;
 
 	//Calcul du barycentre pour décaler
-	std::vector<Point*>& points = currentLine->getPoints();
+	std::vector<Point> points;// = currentLine.getPoints();
 	for(unsigned int i = 0; i < points.size(); i++) {
-		sumX += points.at(i)->getX();
-		sumY += points.at(i)->getY();
+		sumX += points.at(i).getX();
+		sumY += points.at(i).getY();
 	}
 
-	Point barycenter = {sumX / currentLine->getPoints().size(), sumY / currentLine->getPoints().size()};
+	Point barycenter = {sumX / currentLine.getPoints().size(), sumY / currentLine.getPoints().size()};
 
 	for(unsigned int i = 0; i < points.size(); i++) {
 		// Translate barycenter to origin
-		points.at(i)->setX(points.at(i)->getX() - barycenter.getX());
-		points.at(i)->setY(points.at(i)->getY() - barycenter.getY());
+		points.at(i).setX(points.at(i).getX() - barycenter.getX());
+		points.at(i).setY(points.at(i).getY() - barycenter.getY());
 
-		x = points.at(i)->getX();
-		y = points.at(i)->getY();
+		x = points.at(i).getX();
+		y = points.at(i).getY();
 
 		// Scale
-		points.at(i)->setX((x * matrix[0]) + (y * matrix[1]));
-		points.at(i)->setY((x * matrix[2]) + (y * matrix[3]));
+		points.at(i).setX((x * matrix[0]) + (y * matrix[1]));
+		points.at(i).setY((x * matrix[2]) + (y * matrix[3]));
 
 		// Translation back
-		points.at(i)->setX(points.at(i)->getX() + barycenter.getX());
-		points.at(i)->setY(points.at(i)->getY() + barycenter.getY());
+		points.at(i).setX(points.at(i).getX() + barycenter.getX());
+		points.at(i).setY(points.at(i).getY() + barycenter.getY());
 	}
 }
 
@@ -730,10 +733,10 @@ void rotate(float angle) {
 	float sumY = 0;
 
 	//Calcul du barycentre pour décaler
-	std::vector<Point*>& points = currentLine->getPoints();
+	std::vector<Point> points;// = currentLine.getPoints();
 	for(unsigned int i = 0; i < points.size(); i++) {
-		sumX += points.at(i)->getX();
-		sumY += points.at(i)->getY();
+		sumX += points.at(i).getX();
+		sumY += points.at(i).getY();
 	}
 
 	Point barycenter = {sumX / points.size(), sumY / points.size()};
@@ -741,18 +744,18 @@ void rotate(float angle) {
 	for(unsigned int i = 0; i < points.size(); i++) {
 
 		// Translate barycenter to origin
-		points.at(i)->setX(points.at(i)->getX() - barycenter.getX());
-		points.at(i)->setY(points.at(i)->getY() - barycenter.getY());
+		points.at(i).setX(points.at(i).getX() - barycenter.getX());
+		points.at(i).setY(points.at(i).getY() - barycenter.getY());
 
-		x = points.at(i)->getX();
-		y = points.at(i)->getY();
+		x = points.at(i).getX();
+		y = points.at(i).getY();
 
 		// Rotation around origin
-		points.at(i)->setX((x * matrix[0]) + (y * matrix[1]));
-		points.at(i)->setY((x * matrix[2]) + (y * matrix[3]));
+		points.at(i).setX((x * matrix[0]) + (y * matrix[1]));
+		points.at(i).setY((x * matrix[2]) + (y * matrix[3]));
 
 		// Translation back
-		points.at(i)->setX(points.at(i)->getX() + barycenter.getX());
-		points.at(i)->setY(points.at(i)->getY() + barycenter.getY());
+		points.at(i).setX(points.at(i).getX() + barycenter.getX());
+		points.at(i).setY(points.at(i).getY() + barycenter.getY());
 	}
 }

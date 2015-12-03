@@ -13,12 +13,12 @@ namespace utils
 }
 
 
-bool myComparator(Point* a, Point* b) 
+bool myComparator(const Point& a, const Point& b) 
 {// Abscisse croissante ou ou ordonnee croissante si abscisses egales
-	return (a->getX() < b->getX() || (a->getX() == b->getX() && a->getY() < b->getY()));
+	return (a.getX() < b.getX() || (a.getX() == b.getX() && a.getY() < b.getY()));
 }
 
-Triangulation2D_qcq::Triangulation2D_qcq(std::vector<Point*> points)
+Triangulation2D_qcq::Triangulation2D_qcq(const std::vector<Point>& points)
 	: TriangleStrip(points)
 {}
 
@@ -34,12 +34,12 @@ void Triangulation2D_qcq::computeTriangulation()
 	std::sort(_points.begin(), _points.end(), myComparator); // 12 32 45 71(26 33 53 80)
 
 	// Initialisation avec 2-triangulation initial (seulement si y'a des points aliggnés ? wtf)
-	Point* firstPoint = _points.at(0);
-	std::vector<Point*> minPoints;
+	Point firstPoint = _points.at(0);
+	std::vector<Point> minPoints;
 	
 	for(int i = 0; i < _points.size(); ++i) 
 	{
-		if(_points.at(i)->getX() == firstPoint->getX()) 
+		if(_points.at(i).getX() == firstPoint.getX()) 
 		{
 			minPoints.push_back(_points.at(i));
 		}
@@ -68,9 +68,9 @@ void Triangulation2D_qcq::computeTriangulation()
 		return;
 
 	// Create start edges
-	std::vector<Line*> edges;
+	std::vector<Line> edges;
 	for(int j = 0; j < minPoints.size() - 1; ++j) 
-		edges.push_back(new Line(minPoints.at(j), minPoints.at(j + 1)));
+		edges.push_back(Line(minPoints.at(j), minPoints.at(j + 1)));
 
 #if LOG_Triangulation2D_qcq
 	std::cout << "Liste des 1eres aretes : " << std::endl;
@@ -79,13 +79,13 @@ void Triangulation2D_qcq::computeTriangulation()
 	}
 #endif
 
-	Point* firstOtherPoint = _points.at(cpt);
-	std::vector<Line*> edgesToAdd;
+	Point firstOtherPoint = _points.at(cpt);
+	std::vector<Line> edgesToAdd;
 	for(auto& line : edges) 
 	{
-		Line* lineTemp1 = new Line(line->getStartPoint(), firstOtherPoint);
-		Line* lineTemp2 = new Line(line->getEndPoint(), firstOtherPoint);
-		Triangle* t = new Triangle(line->getStartPoint(), line->getEndPoint(), firstOtherPoint); // Si on le met sous les vectors ça bug u_u
+		Line lineTemp1(line.getStartPoint(), firstOtherPoint);
+		Line lineTemp2(line.getEndPoint(), firstOtherPoint);
+		Triangle t(line.getStartPoint(), line.getEndPoint(), firstOtherPoint); // Si on le met sous les vectors ça bug u_u
 		edgesToAdd.push_back(lineTemp1);
 		edgesToAdd.push_back(lineTemp2);
 		_triangles.push_back(t);
@@ -98,18 +98,18 @@ void Triangulation2D_qcq::computeTriangulation()
 	// Pour chaque point restant 
 	for(; cpt < _points.size(); ++cpt) 
 	{
-		Point* nextPoint = _points.at(cpt);
+		Point nextPoint = _points.at(cpt);
 
 		// Calculer enveloppe convexe des pts deja traites
-		std::vector<Point*> tmp(_points.begin(), _points.begin() + cpt);
+		std::vector<Point> tmp(_points.begin(), _points.begin() + cpt);
 		Graham_Scan enveloppe(tmp);
 		enveloppe.calculEnveloppe();
-		std::vector<Point*> pointsEnveloppe = enveloppe.getEnveloppe();
+		std::vector<Point> pointsEnveloppe = enveloppe.getEnveloppe();
 		// Calculer les normales de chaque arete de l'enveloppe
 		// Puis produit scalaire avec le nouveau point
 		for (auto p = pointsEnveloppe.begin(); p != pointsEnveloppe.end(); ++p)
 		{
-			Point normal, *p2, *p3;
+			Point normal, p2, p3;
 			Point edge;
 			if (p == pointsEnveloppe.end() - 1)
 				p2 = pointsEnveloppe.front();
@@ -120,18 +120,18 @@ void Triangulation2D_qcq::computeTriangulation()
 			else
 				p3 = *(p - 1);
 			// Normale value
-			normal.setX(-(p2->getY() - (*p)->getY()));
-			normal.setY(p2->getX() - (*p)->getX());
-			edge.setX(p3->getX() - (*p)->getX());
-			edge.setY(p3->getY() - (*p)->getY());
+			normal.setX(-(p2.getY() - (*p).getY()));
+			normal.setY(p2.getX() - (*p).getX());
+			edge.setX(p3.getX() - (*p).getX());
+			edge.setY(p3.getY() - (*p).getY());
 			double dot = utils::dotProduct(normal, edge);
 			if (dot < 0)
 				normal = -(normal);
-			edge.setX(nextPoint->getX()- (*p)->getX());
-			edge.setY(nextPoint->getY() - (*p)->getY());
+			edge.setX(nextPoint.getX()- (*p).getX());
+			edge.setY(nextPoint.getY() - (*p).getY());
 			dot = utils::dotProduct(normal, edge);
 			if (dot < 0)
-				_triangles.push_back(new Triangle(*p, p2, nextPoint));
+				_triangles.push_back(Triangle(*p, p2, nextPoint));
 		}
 	}
 

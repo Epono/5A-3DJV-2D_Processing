@@ -9,36 +9,36 @@
 class Graham_Scan : public LineStrip
 {
 private:
-	Point* centroid_;
-	std::vector<Point*> enveloppe_;
+	Point centroid_;
+	std::vector<Point> enveloppe_;
 
 public:
 	Graham_Scan() {}
-	Graham_Scan(std::vector<Point*> points) : LineStrip(points) {}
+	Graham_Scan(std::vector<Point> points) : LineStrip(points) {}
 
 	void calculEnveloppe();
 	void computeCentroid();
 	static double OrientedAngle(const Point&, const Point&, const Point&);
 
-	Point* getCentroid() { return centroid_; }
-	std::vector<Point*> getEnveloppe() { return enveloppe_; }
+	Point getCentroid()const { return centroid_; }
+	std::vector<Point> getEnveloppe() const{ return enveloppe_; }
 };
 
-typedef struct GrahamSort
+struct GrahamSort
 {
-	GrahamSort(Point* b) : barycentre_(b){}
+	GrahamSort(Point b) : barycentre_(b){}
 	
-	bool operator()(Point* Pi, Point* Pj)
+	bool operator()(Point Pi, Point Pj)
 	{
-		Point* X(new Point(barycentre_->getX() + 1280, barycentre_->getY()));
-		double PiAngle(Graham_Scan::OrientedAngle(*X, *barycentre_, *Pi))
-			, PjAngle(Graham_Scan::OrientedAngle(*X, *barycentre_, *Pj));
+		Point X(barycentre_.getX() + 1280, barycentre_.getY());
+		double PiAngle(Graham_Scan::OrientedAngle(X, barycentre_, Pi))
+			, PjAngle(Graham_Scan::OrientedAngle(X, barycentre_, Pj));
 		
 		if (PiAngle == PjAngle)
-			return Pi->DistanceTo(*barycentre_) < Pj->DistanceTo(*barycentre_);
+			return Pi.DistanceTo(barycentre_) < Pj.DistanceTo(barycentre_);
 		else
 			return PiAngle < PjAngle;
 	}
 
-	Point* barycentre_;
-} GrahamSort;
+	Point barycentre_;
+};

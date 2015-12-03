@@ -4,31 +4,24 @@
 
 class Line {
 private:
-	Point* _startPoint;
-	Point* _endPoint;
+	Point _startPoint;
+	Point _endPoint;
 
 public:
 	Line() :
-		_startPoint(nullptr), _endPoint(nullptr) {}
+		_startPoint(), _endPoint() {}
 
-	Line(Point* startPoint, Point* endPoint) :
+	Line(Point startPoint, Point endPoint) :
 		_startPoint(startPoint), _endPoint(endPoint) {}
-	//~Line()
-	//{
-	//	if (_startPoint) delete _startPoint;
-	//	if (_endPoint) delete _endPoint;
-	//}
-	//float getLength() const;
 
-	// TODO: remettre du const
-	Point* getEndPoint() { return _endPoint; }
-	void setEndPoint(Point* endPoint) { _endPoint = endPoint; }
+	Point getEndPoint() const { return _endPoint; }
+	void setEndPoint(const Point& endPoint) { _endPoint = endPoint; }
 
-	Point* getStartPoint() { return _startPoint; }
-	void setStartPoint(Point* startPoint) { _startPoint = startPoint; }
+	Point getStartPoint()const { return _startPoint; }
+	void setStartPoint(const Point& startPoint) { _startPoint = startPoint; }
 
-	friend std::ostream& operator<<(std::ostream& os, Line& l) {
-		os << "[" << *(l.getStartPoint()) << " - " << *(l.getEndPoint()) << "]";
+	friend std::ostream& operator<<(std::ostream& os, const Line& l) {
+		os << "[" << l.getStartPoint() << " - " << l.getEndPoint() << "]";
 		return os;
 	}
 };

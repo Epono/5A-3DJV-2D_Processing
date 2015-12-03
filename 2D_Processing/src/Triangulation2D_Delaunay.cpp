@@ -42,7 +42,7 @@ bool PointInTriangle(Point& pt, Point& v1, Point& v2, Point& v3) {
 	return ((b1 == b2) && (b2 == b3));
 }
 
-void Triangulation2D_Delaunay::AddPoint(Point* p) {
+void Triangulation2D_Delaunay::AddPoint(const Point& p) {
 	if(_triangles.empty()) {
 		if(_points.empty()) {
 			_points.push_back(p);
@@ -56,7 +56,7 @@ void Triangulation2D_Delaunay::AddPoint(Point* p) {
 	}
 }
 
-void Triangulation2D_Delaunay::RemovePoint(Point* p) {
+void Triangulation2D_Delaunay::RemovePoint(const Point& p) {
 	if(_triangles.empty()) {
 		if(_points.size() == 1) {
 			_points.clear();

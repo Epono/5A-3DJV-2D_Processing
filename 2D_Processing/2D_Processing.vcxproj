@@ -11,11 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Delaunay.cpp" />
     <ClCompile Include="src\Graham_Scan.cpp" />
     <ClCompile Include="src\Jarvis.cpp" />
     <ClCompile Include="src\Line.cpp" />
     <ClCompile Include="src\LineStrip.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\QuadEdge.cpp" />
     <ClCompile Include="src\Triangulation2D_Delaunay.cpp" />
     <ClCompile Include="src\Triangulation2D_Delaunay_Bowyer_Watson.cpp" />
     <ClCompile Include="src\Point.cpp" />
@@ -23,11 +25,13 @@
     <ClCompile Include="src\Voronoi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="headers\Delaunay.h" />
     <ClInclude Include="headers\Graham_Scan.h" />
     <ClInclude Include="headers\Jarvis.h" />
     <ClInclude Include="headers\Line.h" />
     <ClInclude Include="headers\LineStrip.h" />
     <ClInclude Include="headers\Point.h" />
+    <ClInclude Include="headers\QuadEdge.h" />
     <ClInclude Include="headers\Triangle.h" />
     <ClInclude Include="headers\TriangleStrip.h" />
     <ClInclude Include="headers\Triangulation2D_Delaunay.h" />

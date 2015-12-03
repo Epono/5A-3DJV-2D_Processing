@@ -16,6 +16,7 @@
 #include "Triangulation2D_qcq.h"
 #include "Triangulation2D_Delaunay_Bowyer_Watson.h"
 #include "Triangulation2D_Delaunay.h"
+#include "Delaunay.h"
 #include "Voronoi.h"
 
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
@@ -30,6 +31,7 @@ Triangulation2D_qcq* triangulation2D_qcq;
 Voronoi* voronoi;
 Triangulation2D_Delaunay_Bowyer_Watson* triangulation2D_Delaunay_Bowyer_Watson;
 Triangulation2D_Delaunay* triangulation2D_Delaunay;
+Delaunay* delaunay;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -94,6 +96,7 @@ int main(int argc, char **argv) {
 	voronoi = new Voronoi();
 	triangulation2D_Delaunay_Bowyer_Watson = new Triangulation2D_Delaunay_Bowyer_Watson();
 	triangulation2D_Delaunay = new Triangulation2D_Delaunay();
+	delaunay = new Delaunay();
 
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
@@ -128,6 +131,10 @@ void display() {
 		break;
 	case TRIANGULATION_2D_DELAUNAY:
 		drawTriangleStrip(*triangulation2D_Delaunay, 2);
+		break;
+	case DELAUNAY:
+		//TODO:
+		//drawTriangleStrip(*delaunay, 2);
 		break;
 	case VORONOI:
 		//drawLineStrip(LineStrip(voronoi->getArea()), 2, true);
@@ -227,6 +234,12 @@ void mouse(int button, int state, int x, int y) {
 		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
 		triangulation2D_Delaunay->computeTriangulation();
 		break;
+	case DELAUNAY:
+		//TODO:
+		delaunay->insertPoint(point);
+		delaunay->computeEdges();
+		delaunay->computeTriangles();
+		break;
 	case NONE:
 		break;
 	default:
@@ -311,6 +324,11 @@ void motion(int x, int y) {
 	case TRIANGULATION_2D_DELAUNAY:
 		triangulation2D_Delaunay->computeTriangulation();
 		break;
+	case DELAUNAY:
+		//TODO:
+		delaunay->computeEdges();
+		delaunay->computeTriangles();
+		break;
 	case NONE:
 		break;
 	default:
@@ -391,7 +409,7 @@ void keyboard(unsigned char key, int x, int y) {
 			g.calculEnveloppe();
 			currentGrahamPoints = new LineStrip(g.getEnveloppe());
 			break;
-		}
+	}
 #endif
 	case 'j':
 		currentAlgorithm = JARVIS;
@@ -403,7 +421,7 @@ void keyboard(unsigned char key, int x, int y) {
 			Jarvis j(currentLine->getPoints());
 			j.computeJarvis();
 			currentJarvisPoints = new LineStrip(j.getEnveloppe());
-		}
+}
 #endif
 		break;
 	case 'i':
@@ -421,6 +439,13 @@ void keyboard(unsigned char key, int x, int y) {
 		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
 		triangulation2D_Delaunay->computeTriangulation();
 		break;
+	case '2':
+		currentAlgorithm = DELAUNAY;
+		//TODO:
+		delaunay->computeEdges();
+		delaunay->computeTriangles();
+		//delaunay->computeTriangulation();
+		break;
 	case 127:
 		// deletes selected point
 		if(windowVerticeToMove != -1) {
@@ -434,7 +459,7 @@ void keyboard(unsigned char key, int x, int y) {
 		exit(0);
 	case 'q':
 		exit(0);
-	}
+}
 
 	glutPostRedisplay(); // Rafraichissement de l'affichage
 }

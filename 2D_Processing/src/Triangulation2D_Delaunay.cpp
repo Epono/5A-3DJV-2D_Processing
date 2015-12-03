@@ -28,6 +28,48 @@ bool Triangulation2D_Delaunay::IsInsideCircle(Point& center, float radius, Point
 	return std::pow(p.getX() - center.getX(), 2) + std::pow(p.getY() - center.getY(), 2) < std::pow(radius, 2);
 }
 
+float sign(Point& p1, Point& p2, Point& p3) {
+	return (p1.getX() - p3.getX()) * (p2.getY() - p3.getY()) - (p2.getX() - p3.getX()) * (p1.getY() - p3.getY());
+}
+
+bool PointInTriangle(Point& pt, Point& v1, Point& v2, Point& v3) {
+	bool b1, b2, b3;
+
+	b1 = sign(pt, v1, v2) < 0.0f;
+	b2 = sign(pt, v2, v3) < 0.0f;
+	b3 = sign(pt, v3, v1) < 0.0f;
+
+	return ((b1 == b2) && (b2 == b3));
+}
+
+void Triangulation2D_Delaunay::AddPoint(Point* p) {
+	if(_triangles.empty()) {
+		if(_points.empty()) {
+			_points.push_back(p);
+		}
+		else {
+			// TODO
+		}
+	}
+	else {
+		_points.push_back(p);
+	}
+}
+
+void Triangulation2D_Delaunay::RemovePoint(Point* p) {
+	if(_triangles.empty()) {
+		if(_points.size() == 1) {
+			_points.clear();
+		}
+		else if(true) {
+
+		}
+		else {
+
+		}
+	}
+}
+
 void Triangulation2D_Delaunay::computeTriangulation() {
 
 }

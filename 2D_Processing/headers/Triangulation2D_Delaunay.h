@@ -17,5 +17,8 @@ public:
 	bool Circumcircle(const Point& p0, const Point& p1, const Point& p2, Point& center, float& radius);
 	bool IsInsideCircle(Point& center, float radius, Point& p);
 
+	void AddPoint(Point* p);
+	void RemovePoint(Point* p);
+
 	void computeTriangulation();
 };

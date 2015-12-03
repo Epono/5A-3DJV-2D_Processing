@@ -83,7 +83,7 @@ void Triangulation2D_Delaunay_Bowyer_Watson::computeTriangulation() {
 			Point center;
 
 			// Calculer le circumcircle center et le rayon du triangle
-			Circumcircle(*tempTriangle->getPointA(), *tempTriangle->getPointA(), *tempTriangle->getPointA(), center, radius);
+			Circumcircle(*tempTriangle->getPointA(), *tempTriangle->getPointB(), *tempTriangle->getPointC(), center, radius);
 
 			// Si le point est dans le circumcircle
 			if(IsInsideCircle(center, radius, *point)) {

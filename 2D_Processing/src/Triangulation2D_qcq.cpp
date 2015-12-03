@@ -105,28 +105,32 @@ void Triangulation2D_qcq::computeTriangulation()
 		Graham_Scan enveloppe(tmp);
 		enveloppe.calculEnveloppe();
 		std::vector<Point*> pointsEnveloppe = enveloppe.getEnveloppe();
-		std::sort(pointsEnveloppe.begin(), pointsEnveloppe.end(), myComparator);
 		// Calculer les normales de chaque arete de l'enveloppe
 		// Puis produit scalaire avec le nouveau point
 		for (auto p = pointsEnveloppe.begin(); p != pointsEnveloppe.end(); ++p)
 		{
-			Point normal, *p2;
+			Point normal, *p2, *p3;
 			Point edge;
 			if (p == pointsEnveloppe.end() - 1)
 				p2 = pointsEnveloppe.front();
 			else
 				p2 = *(p + 1);
-			// Edge coordinate
-			edge.setX(p2->getX() - (*p)->getX());
-			edge.setY(p2->getY() - (*p)->getY());
+			if (p == pointsEnveloppe.begin())
+				p3 = pointsEnveloppe.back();
+			else
+				p3 = *(p - 1);
 			// Normale value
-			normal.setX(-edge.getY());
-			normal.setY(edge.getX());
-			if (utils::dotProduct(normal, edge) > 0)
+			normal.setX(-(p2->getY() - (*p)->getY()));
+			normal.setY(p2->getX() - (*p)->getX());
+			edge.setX(p3->getX() - (*p)->getX());
+			edge.setY(p3->getY() - (*p)->getY());
+			double dot = utils::dotProduct(normal, edge);
+			if (dot < 0)
 				normal = -(normal);
-			double angle1 = Graham_Scan::OrientedAngle(normal, **p, *nextPoint)
-				, angle2 = Graham_Scan::OrientedAngle(*nextPoint, **p, normal);
-			if (angle1 < M_PI_2 || angle2 < M_PI_2)
+			edge.setX(nextPoint->getX()- (*p)->getX());
+			edge.setY(nextPoint->getY() - (*p)->getY());
+			dot = utils::dotProduct(normal, edge);
+			if (dot < 0)
 				_triangles.push_back(new Triangle(*p, p2, nextPoint));
 		}
 	}

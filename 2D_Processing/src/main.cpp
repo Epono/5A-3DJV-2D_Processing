@@ -14,7 +14,7 @@
 #include "Graham_Scan.h"
 #include "Jarvis.h"
 #include "Triangulation2D_qcq.h"
-#include "Triangulation2D_Delaunay_Bowyer_Watson.h"
+//#include "Triangulation2D_Delaunay_Bowyer_Watson.h"
 #include "Voronoi.h"
 
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
@@ -550,6 +550,7 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
 		glVertex2f(t->getPointB()->getX(), t->getPointB()->getY());
 		glVertex2f(t->getPointC()->getX(), t->getPointC()->getY());
+		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
 	}
 	glEnd();
 

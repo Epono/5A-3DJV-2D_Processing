@@ -29,7 +29,7 @@ bool IsInsideCircle(Point& center, float radius, Point& p) {
 }
 
 bool myComparator(Line& l1, Line& l2) {
-	return (l1.getStartPoint() == l2.getStartPoint && l1.getEndPoint() == l2.getEndPoint);
+	return (l1.getStartPoint() == l2.getStartPoint() && l1.getEndPoint() == l2.getEndPoint());
 }
 
 //subroutine triangulate
@@ -94,7 +94,7 @@ void Triangulation2D_Delaunay_Bowyer_Watson::computeTriangulation() {
 
 		// Supprimer toutes les aretes doublon
 		// http://stackoverflow.com/a/1041939
-		std::sort(edgeBuffer.begin(), edgeBuffer.end());
+		//std::sort(edgeBuffer.begin(), edgeBuffer.end());
 		edgeBuffer.erase(std::unique(edgeBuffer.begin(), edgeBuffer.end(), myComparator), edgeBuffer.end());
 
 		// Ajouter tous les triangles formés par le point avec les aretes (edge buffer)

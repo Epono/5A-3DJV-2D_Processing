@@ -15,6 +15,7 @@
 #include "Jarvis.h"
 #include "Triangulation2D_qcq.h"
 #include "Triangulation2D_Delaunay_Bowyer_Watson.h"
+#include "Triangulation2D_Delaunay.h"
 #include "Voronoi.h"
 
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
@@ -28,6 +29,7 @@ Graham_Scan* graham_scan;
 Triangulation2D_qcq* triangulation2D_qcq;
 Voronoi* voronoi;
 Triangulation2D_Delaunay_Bowyer_Watson* triangulation2D_Delaunay_Bowyer_Watson;
+Triangulation2D_Delaunay* triangulation2D_Delaunay;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -91,6 +93,7 @@ int main(int argc, char **argv) {
 	triangulation2D_qcq = new Triangulation2D_qcq();
 	voronoi = new Voronoi();
 	triangulation2D_Delaunay_Bowyer_Watson = new Triangulation2D_Delaunay_Bowyer_Watson();
+	triangulation2D_Delaunay = new Triangulation2D_Delaunay();
 
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
@@ -123,13 +126,16 @@ void display() {
 	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
 		drawTriangleStrip(*triangulation2D_Delaunay_Bowyer_Watson, 2);
 		break;
+	case TRIANGULATION_2D_DELAUNAY:
+		drawTriangleStrip(*triangulation2D_Delaunay, 2);
+		break;
 	case VORONOI:
 		//drawLineStrip(LineStrip(voronoi->getArea()), 2, true);
 		drawLineStrip(LineStrip(voronoi->getPoints()), 1, true);
 		drawLineStrip(LineStrip(voronoi->getMediatriceP()), 2, true);
 		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(0));
 		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(1));
-		drawLineStrip(LineStrip(voronoi->getIntersect()),2,true);
+		drawLineStrip(LineStrip(voronoi->getIntersect()), 2, true);
 		break;
 	case NONE:
 		break;
@@ -217,6 +223,10 @@ void mouse(int button, int state, int x, int y) {
 		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
 		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
 		break;
+	case TRIANGULATION_2D_DELAUNAY:
+		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay->computeTriangulation();
+		break;
 	case NONE:
 		break;
 	default:
@@ -298,6 +308,9 @@ void motion(int x, int y) {
 	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
 		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
 		break;
+	case TRIANGULATION_2D_DELAUNAY:
+		triangulation2D_Delaunay->computeTriangulation();
+		break;
 	case NONE:
 		break;
 	default:
@@ -378,7 +391,7 @@ void keyboard(unsigned char key, int x, int y) {
 			g.calculEnveloppe();
 			currentGrahamPoints = new LineStrip(g.getEnveloppe());
 			break;
-	}
+		}
 #endif
 	case 'j':
 		currentAlgorithm = JARVIS;
@@ -390,7 +403,7 @@ void keyboard(unsigned char key, int x, int y) {
 			Jarvis j(currentLine->getPoints());
 			j.computeJarvis();
 			currentJarvisPoints = new LineStrip(j.getEnveloppe());
-}
+		}
 #endif
 		break;
 	case 'i':
@@ -402,6 +415,11 @@ void keyboard(unsigned char key, int x, int y) {
 		currentAlgorithm = TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON;
 		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
 		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
+		break;
+	case '1':
+		currentAlgorithm = TRIANGULATION_2D_DELAUNAY;
+		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay->computeTriangulation();
 		break;
 	case 127:
 		// deletes selected point
@@ -562,6 +580,7 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
 		glVertex2f(t->getPointB()->getX(), t->getPointB()->getY());
 		glVertex2f(t->getPointC()->getX(), t->getPointC()->getY());
+		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
 	}
 	glEnd();
 
@@ -581,7 +600,7 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 void drawCircle(float radius, Point& center) {
 	glBegin(GL_LINE_LOOP);
 
-	for (int i = 0; i < 360; i++) {
+	for(int i = 0; i < 360; i++) {
 		float degInRad = i*DEG2RAD;
 		glVertex2f(center.getX() + cos(degInRad)*radius, center.getY() + sin(degInRad)*radius);
 	}

@@ -1,7 +1,7 @@
 #include "Triangulation2D_Delaunay_Bowyer_Watson.h"
 #include "Line.h"
 
-bool Circumcircle(const Point& p0, const Point& p1, const Point& p2, Point& center, float& radius) {
+bool Triangulation2D_Delaunay_Bowyer_Watson::Circumcircle(const Point& p0, const Point& p1, const Point& p2, Point& center, float& radius) {
 	float dA, dB, dC, aux1, aux2, div;
 
 	dA = p0.getX() * p0.getX() + p0.getY() * p0.getY();
@@ -24,7 +24,7 @@ bool Circumcircle(const Point& p0, const Point& p1, const Point& p2, Point& cent
 	return true;
 }
 
-bool IsInsideCircle(Point& center, float radius, Point& p) {
+bool Triangulation2D_Delaunay_Bowyer_Watson::IsInsideCircle(Point& center, float radius, Point& p) {
 	return std::pow(p.getX() - center.getX(), 2) + std::pow(p.getY() - center.getY(), 2) < std::pow(radius, 2);
 }
 
@@ -63,7 +63,7 @@ bool MyLineComparatorLess(Line& l1, Line& l2) {
 void Triangulation2D_Delaunay_Bowyer_Watson::computeTriangulation() {
 
 	// Créer un méga triangle qui contient tous les points
-	Triangle* supertriangle = new Triangle(new Point(-1.5 * WIDTH, -0.5 * HEIGHT), new Point(1.5 * WIDTH, -0.5 * HEIGHT), new Point(WIDTH / 2, 1.5 * HEIGHT));
+	Triangle* supertriangle = new Triangle(new Point(-10 * WIDTH, -10 * HEIGHT), new Point(10 * WIDTH, -10 * HEIGHT), new Point(WIDTH / 2, 10 * HEIGHT));
 	_triangles.push_back(supertriangle);
 
 	// Ajouter les points du triangle à la fin de la liste des points
@@ -134,19 +134,17 @@ void Triangulation2D_Delaunay_Bowyer_Watson::computeTriangulation() {
 	//	}
 	//}
 
-	//_triangles.erase(std::remove_if(_triangles.begin(), _triangles.end(), [supertriangle](Triangle* triangle) {
-	//	return triangle->getPointA() == supertriangle->getPointA() || triangle->getPointA() == supertriangle->getPointB() || triangle->getPointA() == supertriangle->getPointC() ||
-	//		triangle->getPointB() == supertriangle->getPointA() || triangle->getPointB() == supertriangle->getPointB() || triangle->getPointB() == supertriangle->getPointC() ||
-	//		triangle->getPointC() == supertriangle->getPointA() || triangle->getPointC() == supertriangle->getPointB() || triangle->getPointC() == supertriangle->getPointC();
-	//}), _triangles.end());
-
-	std::cout << "tamere" << std::endl;
-
-	_triangles.erase(std::remove_if(_triangles.begin(), _triangles.end(), [](Triangle* triangle) {
-		return triangle->getPointA()->getX() < 0 || triangle->getPointA()->getY() < 0 || triangle->getPointA()->getX() > WIDTH || triangle->getPointA()->getY() > HEIGHT
-			|| triangle->getPointB()->getX() < 0 || triangle->getPointB()->getY() < 0 || triangle->getPointB()->getX() > WIDTH || triangle->getPointB()->getY() > HEIGHT
-			|| triangle->getPointC()->getX() < 0 || triangle->getPointC()->getY() < 0 || triangle->getPointC()->getX() > WIDTH || triangle->getPointC()->getY() > HEIGHT;
+	_triangles.erase(std::remove_if(_triangles.begin(), _triangles.end(), [supertriangle](Triangle* triangle) {
+		return triangle->getPointA() == supertriangle->getPointA() || triangle->getPointA() == supertriangle->getPointB() || triangle->getPointA() == supertriangle->getPointC() ||
+			triangle->getPointB() == supertriangle->getPointA() || triangle->getPointB() == supertriangle->getPointB() || triangle->getPointB() == supertriangle->getPointC() ||
+			triangle->getPointC() == supertriangle->getPointA() || triangle->getPointC() == supertriangle->getPointB() || triangle->getPointC() == supertriangle->getPointC();
 	}), _triangles.end());
+
+	//_triangles.erase(std::remove_if(_triangles.begin(), _triangles.end(), [](Triangle* triangle) {
+	//	return triangle->getPointA()->getX() < 0 || triangle->getPointA()->getY() < 0 || triangle->getPointA()->getX() > WIDTH || triangle->getPointA()->getY() > HEIGHT
+	//		|| triangle->getPointB()->getX() < 0 || triangle->getPointB()->getY() < 0 || triangle->getPointB()->getX() > WIDTH || triangle->getPointB()->getY() > HEIGHT
+	//		|| triangle->getPointC()->getX() < 0 || triangle->getPointC()->getY() < 0 || triangle->getPointC()->getX() > WIDTH || triangle->getPointC()->getY() > HEIGHT;
+	//}), _triangles.end());
 
 	// Supprimer les sommets du supertriangle de la liste
 	_points.pop_back();

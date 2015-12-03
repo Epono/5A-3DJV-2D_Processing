@@ -22,15 +22,12 @@ algorithm currentAlgorithm = NONE;
 
 std::vector<LineStrip*> lines;
 LineStrip *currentLine = nullptr;
-LineStrip *currentJarvisPoints = nullptr;
 Jarvis* jarvis;
 LineStrip *currentGrahamPoints = nullptr;
 Graham_Scan* graham_scan;
-LineStrip *currentTriangulation2D_qcqPoints = nullptr;
 Triangulation2D_qcq* triangulation2D_qcq;
 Voronoi* voronoi;
-LineStrip *areaVoronoi = nullptr;
-
+Triangulation2D_Delaunay_Bowyer_Watson* triangulation2D_Delaunay_Bowyer_Watson;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -59,7 +56,6 @@ void write();										// Writes on the top left what's happening
 void drawLineStrip(LineStrip& line, int lineSize, bool drawCurve);
 void drawTriangleStrip(TriangleStrip& triangles, int lineSize);
 void drawCircle(float radius, Point& center);
-
 
 void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
@@ -94,6 +90,7 @@ int main(int argc, char **argv) {
 	graham_scan = new Graham_Scan();
 	triangulation2D_qcq = new Triangulation2D_qcq();
 	voronoi = new Voronoi();
+	triangulation2D_Delaunay_Bowyer_Watson = new Triangulation2D_Delaunay_Bowyer_Watson();
 
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
@@ -122,6 +119,9 @@ void display() {
 		break;
 	case TRIANGULATION2D_QCQ:
 		drawTriangleStrip(*triangulation2D_qcq, 2);
+		break;
+	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
+		drawTriangleStrip(*triangulation2D_Delaunay_Bowyer_Watson, 2);
 		break;
 	case VORONOI:
 		//drawLineStrip(LineStrip(voronoi->getArea()), 2, true);
@@ -211,7 +211,11 @@ void mouse(int button, int state, int x, int y) {
 		triangulation2D_qcq->computeTriangulation();
 		break;
 	case VORONOI:
-		
+
+		break;
+	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
+		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
 		break;
 	case NONE:
 		break;
@@ -290,6 +294,9 @@ void motion(int x, int y) {
 		break;
 	case VORONOI:
 		//TODO
+		break;
+	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
+		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
 		break;
 	case NONE:
 		break;
@@ -390,6 +397,11 @@ void keyboard(unsigned char key, int x, int y) {
 		currentAlgorithm = TRIANGULATION2D_QCQ;
 		triangulation2D_qcq->setPoints(currentLine->getPoints());
 		triangulation2D_qcq->computeTriangulation();
+		break;
+	case 'b':
+		currentAlgorithm = TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON;
+		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
 		break;
 	case 127:
 		// deletes selected point

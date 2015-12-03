@@ -17,7 +17,7 @@ typedef enum creationState {
 };
 
 typedef enum algorithm {
-	NONE, GRAHAM_SCAN, JARVIS, TRIANGULATION2D_QCQ, VORONOI
+	NONE, GRAHAM_SCAN, JARVIS, TRIANGULATION2D_QCQ, VORONOI, TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON
 };
 
 typedef struct color_rgb {

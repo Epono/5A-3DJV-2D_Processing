@@ -9,11 +9,13 @@
 
 class Triangulation2D_Delaunay_Bowyer_Watson : public TriangleStrip {
 private:
-
 public:
 	Triangulation2D_Delaunay_Bowyer_Watson() : TriangleStrip() {}
 	Triangulation2D_Delaunay_Bowyer_Watson(std::vector<Point*> points)
 		: TriangleStrip(points) {}
+
+	bool removeIf(Triangle* triangle);
+
 
 	void computeTriangulation();
 };

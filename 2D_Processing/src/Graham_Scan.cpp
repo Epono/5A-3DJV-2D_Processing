@@ -51,6 +51,10 @@ void Graham_Scan::calculEnveloppe()
 			avance = false;
 			pivot = sInit;
 		}
+		if(pivot == enveloppe_.end()) 
+		{
+			pivot = enveloppe_.begin();
+		}
 	} while (pivot != sInit || !avance);
 }
 

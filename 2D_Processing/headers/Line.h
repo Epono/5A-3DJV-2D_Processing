@@ -13,7 +13,11 @@ public:
 
 	Line(Point* startPoint, Point* endPoint) :
 		_startPoint(startPoint), _endPoint(endPoint) {}
-
+	//~Line()
+	//{
+	//	if (_startPoint) delete _startPoint;
+	//	if (_endPoint) delete _endPoint;
+	//}
 	//float getLength() const;
 
 	// TODO: remettre du const
@@ -27,6 +31,4 @@ public:
 		os << "[" << *(l.getStartPoint()) << " - " << *(l.getEndPoint()) << "]";
 		return os;
 	}
-
-	~Line();
 };

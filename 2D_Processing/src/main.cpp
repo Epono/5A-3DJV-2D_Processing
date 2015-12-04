@@ -14,6 +14,8 @@
 #include "Graham_Scan.h"
 #include "Jarvis.h"
 #include "Triangulation2D_qcq.h"
+#include "Triangulation2D_Delaunay_Bowyer_Watson.h"
+#include "Triangulation2D_Delaunay.h"
 #include "Voronoi.h"
 
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
@@ -21,15 +23,13 @@ algorithm currentAlgorithm = NONE;
 
 std::vector<LineStrip*> lines;
 LineStrip *currentLine = nullptr;
-LineStrip *currentJarvisPoints = nullptr;
 Jarvis* jarvis;
 LineStrip *currentGrahamPoints = nullptr;
 Graham_Scan* graham_scan;
-LineStrip *currentTriangulation2D_qcqPoints = nullptr;
 Triangulation2D_qcq* triangulation2D_qcq;
 Voronoi* voronoi;
-LineStrip *areaVoronoi = nullptr;
-
+Triangulation2D_Delaunay_Bowyer_Watson* triangulation2D_Delaunay_Bowyer_Watson;
+Triangulation2D_Delaunay* triangulation2D_Delaunay;
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -59,13 +59,9 @@ void drawLineStrip(LineStrip& line, int lineSize, bool drawCurve);
 void drawTriangleStrip(TriangleStrip& triangles, int lineSize);
 void drawCircle(float radius, Point& center);
 
-
 void translate(int xOffset, int yOffset);
 void scale(float scaleX, float scaleY);
 void rotate(float angle);
-
-#define WIDTH 1280
-#define HEIGHT 720
 
 #define USE_DRAW_V2 TRUE
 
@@ -96,6 +92,8 @@ int main(int argc, char **argv) {
 	graham_scan = new Graham_Scan();
 	triangulation2D_qcq = new Triangulation2D_qcq();
 	voronoi = new Voronoi();
+	triangulation2D_Delaunay_Bowyer_Watson = new Triangulation2D_Delaunay_Bowyer_Watson();
+	triangulation2D_Delaunay = new Triangulation2D_Delaunay();
 
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
@@ -125,13 +123,19 @@ void display() {
 	case TRIANGULATION2D_QCQ:
 		drawTriangleStrip(*triangulation2D_qcq, 2);
 		break;
+	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
+		drawTriangleStrip(*triangulation2D_Delaunay_Bowyer_Watson, 2);
+		break;
+	case TRIANGULATION_2D_DELAUNAY:
+		drawTriangleStrip(*triangulation2D_Delaunay, 2);
+		break;
 	case VORONOI:
 		//drawLineStrip(LineStrip(voronoi->getArea()), 2, true);
 		drawLineStrip(LineStrip(voronoi->getPoints()), 1, true);
 		drawLineStrip(LineStrip(voronoi->getMediatriceP()), 2, true);
 		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(0));
 		drawCircle(voronoi->getRadius().at(0), *voronoi->getActualPoint().at(1));
-		drawLineStrip(LineStrip(voronoi->getIntersect()),2,true);
+		drawLineStrip(LineStrip(voronoi->getIntersect()), 2, true);
 		break;
 	case NONE:
 		break;
@@ -213,7 +217,15 @@ void mouse(int button, int state, int x, int y) {
 		triangulation2D_qcq->computeTriangulation();
 		break;
 	case VORONOI:
-		
+
+		break;
+	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
+		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
+		break;
+	case TRIANGULATION_2D_DELAUNAY:
+		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay->computeTriangulation();
 		break;
 	case NONE:
 		break;
@@ -292,6 +304,12 @@ void motion(int x, int y) {
 		break;
 	case VORONOI:
 		//TODO
+		break;
+	case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
+		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
+		break;
+	case TRIANGULATION_2D_DELAUNAY:
+		triangulation2D_Delaunay->computeTriangulation();
 		break;
 	case NONE:
 		break;
@@ -373,7 +391,7 @@ void keyboard(unsigned char key, int x, int y) {
 			g.calculEnveloppe();
 			currentGrahamPoints = new LineStrip(g.getEnveloppe());
 			break;
-	}
+		}
 #endif
 	case 'j':
 		currentAlgorithm = JARVIS;
@@ -385,13 +403,24 @@ void keyboard(unsigned char key, int x, int y) {
 			Jarvis j(currentLine->getPoints());
 			j.computeJarvis();
 			currentJarvisPoints = new LineStrip(j.getEnveloppe());
-}
+		}
 #endif
 		break;
 	case 'i':
 		currentAlgorithm = TRIANGULATION2D_QCQ;
 		triangulation2D_qcq->setPoints(currentLine->getPoints());
 		triangulation2D_qcq->computeTriangulation();
+		triangulation2D_qcq->flippingEdges();
+		break;
+	case 'b':
+		currentAlgorithm = TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON;
+		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
+		break;
+	case '1':
+		currentAlgorithm = TRIANGULATION_2D_DELAUNAY;
+		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay->computeTriangulation();
 		break;
 	case 127:
 		// deletes selected point
@@ -552,6 +581,7 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
 		glVertex2f(t->getPointB()->getX(), t->getPointB()->getY());
 		glVertex2f(t->getPointC()->getX(), t->getPointC()->getY());
+		glVertex2f(t->getPointA()->getX(), t->getPointA()->getY());
 	}
 	glEnd();
 
@@ -571,7 +601,7 @@ void drawTriangleStrip(TriangleStrip& triangleStrip, int lineSize) {
 void drawCircle(float radius, Point& center) {
 	glBegin(GL_LINE_LOOP);
 
-	for (int i = 0; i < 360; i++) {
+	for(int i = 0; i < 360; i++) {
 		float degInRad = i*DEG2RAD;
 		glVertex2f(center.getX() + cos(degInRad)*radius, center.getY() + sin(degInRad)*radius);
 	}

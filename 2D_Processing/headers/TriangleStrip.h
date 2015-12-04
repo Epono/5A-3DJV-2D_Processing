@@ -7,6 +7,7 @@ class TriangleStrip {
 protected:
 	std::vector<Point*> _points;
 	std::vector<Triangle*> _triangles;
+	//std::vector<Line*> _edges;
 	color_rgb _color;
 
 public:

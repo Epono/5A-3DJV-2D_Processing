@@ -2,6 +2,9 @@
 
 #include "Point.h"
 
+#define WIDTH 1280
+#define HEIGHT 720
+
 // Represents the state of the creation action
 typedef enum creationState {
 	WAITING_FOR_FIRST_CLICK,
@@ -14,7 +17,7 @@ typedef enum creationState {
 };
 
 typedef enum algorithm {
-	NONE, GRAHAM_SCAN, JARVIS, TRIANGULATION2D_QCQ, VORONOI
+	NONE, GRAHAM_SCAN, JARVIS, TRIANGULATION2D_QCQ, VORONOI, TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON, TRIANGULATION_2D_DELAUNAY
 };
 
 typedef struct color_rgb {

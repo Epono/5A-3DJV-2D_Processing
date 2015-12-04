@@ -3,6 +3,7 @@
 #include <vector>
 #include "Point.h"
 #include "utils.h"
+#include "Line.h"
 
 class Triangle {
 private:
@@ -10,6 +11,9 @@ private:
 	Point* _pointB;
 	Point* _pointC;
 	color_rgb _color;
+	Line* _edgeA;
+	Line* _edgeB;
+	Line* _edgeC;
 
 public:
 	Triangle(Point* pointA, Point* pointB, Point* pointC)
@@ -31,4 +35,17 @@ public:
 
 	Point* getPointC() const { return _pointC; }
 	void setPointC(Point* point) { _pointC = point; }
+
+
+	Line* getEgdeA() const { return _edgeA; }
+	void setEgdeA(Line* edge) { _edgeA = edge; }
+
+	Line* getEgdeB() const { return _edgeB; }
+	void setEgdeB(Line* edge) { _edgeB = edge; }
+
+	Line* getEgdeC() const { return _edgeC; }
+	void setEgdeC(Line* edge) { _edgeC = edge; }
+
+
+
 };

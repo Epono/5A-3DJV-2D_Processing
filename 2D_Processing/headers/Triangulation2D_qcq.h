@@ -13,5 +13,7 @@ public:
 	Triangulation2D_qcq() : TriangleStrip() {}
 	Triangulation2D_qcq(std::vector<Point*> points);
 
+
 	void computeTriangulation();
+	void flippingEdges();
 };

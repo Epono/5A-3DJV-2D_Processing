@@ -14,9 +14,7 @@
 #include "Graham_Scan.h"
 #include "Jarvis.h"
 #include "Triangulation2D_qcq.h"
-#include "Triangulation2D_Delaunay_Bowyer_Watson.h"
 #include "Triangulation2D_Delaunay.h"
-#include "Delaunay.h"
 #include "Voronoi.h"
 
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
@@ -94,10 +92,7 @@ int main(int argc, char **argv) {
 	graham_scan = new Graham_Scan();
 	triangulation2D_qcq = new Triangulation2D_qcq();
 	voronoi = new Voronoi();
-	//triangulation2D_Delaunay_Bowyer_Watson = new Triangulation2D_Delaunay_Bowyer_Watson();
 	triangulation2D_Delaunay = new Triangulation2D_Delaunay();
-	//delaunay = new Delaunay();
-
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
 	createMenu();							// Creates the menu available via right-click
@@ -234,22 +229,7 @@ void mouse(int button, int state, int x, int y) {
 		triangulation2D_qcq->computeTriangulation();
 		break;
 	case VORONOI:
-
 		break;
-		//case TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON:
-		//	triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
-		//	triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
-		//	break;
-		//case TRIANGULATION_2D_DELAUNAY:
-		//	//triangulation2D_Delaunay->setPoints(currentLine->getPoints());
-		//	triangulation2D_Delaunay->InsertPoint(point);
-		//	break;
-		//case DELAUNAY:
-		//	//TODO:
-		//	delaunay->insertPoint(point);
-		//	delaunay->computeEdges();
-		//	delaunay->computeTriangles();
-		//	break;
 	case NONE:
 		break;
 	default:
@@ -443,24 +423,13 @@ void keyboard(unsigned char key, int x, int y) {
 		currentAlgorithm = TRIANGULATION2D_QCQ;
 		triangulation2D_qcq->setPoints(currentLine->getPoints());
 		triangulation2D_qcq->computeTriangulation();
+		triangulation2D_qcq->flippingEdges();
 		break;
-		//case 'b':
-		//	currentAlgorithm = TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON;
-		//	triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
-		//	triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
-		//	break;
 	case '1':
 		currentAlgorithm = TRIANGULATION_2D_DELAUNAY;
 		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
 		triangulation2D_Delaunay->computeTriangulation();
 		break;
-		//case '2':
-		//	currentAlgorithm = DELAUNAY;
-		//	//TODO:
-		//	delaunay->computeEdges();
-		//	delaunay->computeTriangles();
-		//	//delaunay->computeTriangulation();
-		//	break;
 	case 127:
 		// deletes selected point
 		if(windowVerticeToMove != -1) {

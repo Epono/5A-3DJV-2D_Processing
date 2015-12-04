@@ -135,7 +135,6 @@ void Voronoi::DefineArea(std::vector<Point*> areaSet)
 {
 	
 	
-
 	Point* one;
 	Point* two;
 	Point* three;
@@ -183,7 +182,8 @@ void Voronoi::traceCercle(Point center, float radius)
 
 void Voronoi::flippingEdge()
 {
-	std::vector<Line*> listEdge;
+	
+
 
 }
 

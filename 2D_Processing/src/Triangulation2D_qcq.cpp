@@ -1,6 +1,7 @@
 #include "Triangulation2D_qcq.h"
 #include "Line.h"
 #include "Graham_Scan.h"
+#include "Jarvis.h"
 
 #define LOG_Triangulation2D_qcq 0
 
@@ -102,9 +103,15 @@ void Triangulation2D_qcq::computeTriangulation()
 
 		// Calculer enveloppe convexe des pts deja traites
 		std::vector<Point*> tmp(_points.begin(), _points.begin() + cpt);
-		Graham_Scan enveloppe(tmp);
-		enveloppe.calculEnveloppe();
-		std::vector<Point*> pointsEnveloppe = enveloppe.getEnveloppe();
+
+		//Graham_Scan enveloppe(tmp);
+		//enveloppe.calculEnveloppe();
+		//std::vector<Point*> pointsEnveloppe = enveloppe.getEnveloppe();
+
+		Jarvis jarvis(tmp);
+		jarvis.computeJarvis();
+		std::vector<Point*> pointsEnveloppe = jarvis.getEnveloppe();
+
 		// Calculer les normales de chaque arete de l'enveloppe
 		// Puis produit scalaire avec le nouveau point
 		for (auto p = pointsEnveloppe.begin(); p != pointsEnveloppe.end(); ++p)

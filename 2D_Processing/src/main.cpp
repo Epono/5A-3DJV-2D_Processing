@@ -16,6 +16,10 @@
 #include "Triangulation2D_qcq.h"
 #include "Triangulation2D_Delaunay_Bowyer_Watson.h"
 #include "Triangulation2D_Delaunay.h"
+<<<<<<< HEAD
+=======
+#include "Delaunay.h"
+>>>>>>> 81337eaa94c691e4fa0f340a8ef6c29497170d48
 #include "Voronoi.h"
 
 creationState currentCreationState = WAITING_FOR_FIRST_CLICK;
@@ -30,6 +34,10 @@ Triangulation2D_qcq* triangulation2D_qcq;
 Voronoi* voronoi;
 Triangulation2D_Delaunay_Bowyer_Watson* triangulation2D_Delaunay_Bowyer_Watson;
 Triangulation2D_Delaunay* triangulation2D_Delaunay;
+<<<<<<< HEAD
+=======
+Delaunay* delaunay;
+>>>>>>> 81337eaa94c691e4fa0f340a8ef6c29497170d48
 
 float windowColor[3] = {0, 0.5f, 0.5f};		// Window color
 int windowVerticeToMove = -1;
@@ -94,6 +102,10 @@ int main(int argc, char **argv) {
 	voronoi = new Voronoi();
 	triangulation2D_Delaunay_Bowyer_Watson = new Triangulation2D_Delaunay_Bowyer_Watson();
 	triangulation2D_Delaunay = new Triangulation2D_Delaunay();
+<<<<<<< HEAD
+=======
+	delaunay = new Delaunay();
+>>>>>>> 81337eaa94c691e4fa0f340a8ef6c29497170d48
 
 
 	//glOrtho(-1, 1.0, -1, 1.0, -1.0, 1.0); // il faut le mettre ?
@@ -129,6 +141,13 @@ void display() {
 	case TRIANGULATION_2D_DELAUNAY:
 		drawTriangleStrip(*triangulation2D_Delaunay, 2);
 		break;
+<<<<<<< HEAD
+=======
+	case DELAUNAY:
+		//TODO:
+		//drawTriangleStrip(*delaunay, 2);
+		break;
+>>>>>>> 81337eaa94c691e4fa0f340a8ef6c29497170d48
 	case VORONOI:
 		//drawLineStrip(LineStrip(voronoi->getArea()), 2, true);
 		drawLineStrip(LineStrip(voronoi->getPoints()), 1, true);
@@ -226,6 +245,15 @@ void mouse(int button, int state, int x, int y) {
 	case TRIANGULATION_2D_DELAUNAY:
 		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
 		triangulation2D_Delaunay->computeTriangulation();
+<<<<<<< HEAD
+=======
+		break;
+	case DELAUNAY:
+		//TODO:
+		delaunay->insertPoint(point);
+		delaunay->computeEdges();
+		delaunay->computeTriangles();
+>>>>>>> 81337eaa94c691e4fa0f340a8ef6c29497170d48
 		break;
 	case NONE:
 		break;
@@ -311,6 +339,14 @@ void motion(int x, int y) {
 	case TRIANGULATION_2D_DELAUNAY:
 		triangulation2D_Delaunay->computeTriangulation();
 		break;
+<<<<<<< HEAD
+=======
+	case DELAUNAY:
+		//TODO:
+		delaunay->computeEdges();
+		delaunay->computeTriangles();
+		break;
+>>>>>>> 81337eaa94c691e4fa0f340a8ef6c29497170d48
 	case NONE:
 		break;
 	default:
@@ -422,6 +458,23 @@ void keyboard(unsigned char key, int x, int y) {
 		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
 		triangulation2D_Delaunay->computeTriangulation();
 		break;
+	case 'b':
+		currentAlgorithm = TRIANGULATION_2D_DELAUNAY_BOWYER_WATSON;
+		triangulation2D_Delaunay_Bowyer_Watson->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay_Bowyer_Watson->computeTriangulation();
+		break;
+	case '1':
+		currentAlgorithm = TRIANGULATION_2D_DELAUNAY;
+		triangulation2D_Delaunay->setPoints(currentLine->getPoints());
+		triangulation2D_Delaunay->computeTriangulation();
+		break;
+	case '2':
+		currentAlgorithm = DELAUNAY;
+		//TODO:
+		delaunay->computeEdges();
+		delaunay->computeTriangles();
+		//delaunay->computeTriangulation();
+		break;
 	case 127:
 		// deletes selected point
 		if(windowVerticeToMove != -1) {
@@ -435,7 +488,7 @@ void keyboard(unsigned char key, int x, int y) {
 		exit(0);
 	case 'q':
 		exit(0);
-	}
+}
 
 	glutPostRedisplay(); // Rafraichissement de l'affichage
 }

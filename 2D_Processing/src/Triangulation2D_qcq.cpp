@@ -1,8 +1,12 @@
 #include "Triangulation2D_qcq.h"
 #include "Line.h"
 #include "Graham_Scan.h"
+<<<<<<< HEAD
 #include <list>
 #include <iterator>
+=======
+#include "Jarvis.h"
+>>>>>>> 81337eaa94c691e4fa0f340a8ef6c29497170d48
 
 #define LOG_Triangulation2D_qcq 0
 
@@ -99,6 +103,7 @@ void Triangulation2D_qcq::computeTriangulation()
 	// Itération
 	// Pour chaque point restant 
 	for(; cpt < _points.size(); ++cpt) 
+<<<<<<< HEAD
 	{
 		Point* nextPoint = _points.at(cpt);
 
@@ -279,6 +284,50 @@ void Triangulation2D_qcq::flippingEdges()
 	for (int i = 0; i<itToD.size(); ++i)
 	{
 		vectorEdge.erase(itToD[i]);
+=======
+	{
+		Point* nextPoint = _points.at(cpt);
+
+		// Calculer enveloppe convexe des pts deja traites
+		std::vector<Point*> tmp(_points.begin(), _points.begin() + cpt);
+
+		//Graham_Scan enveloppe(tmp);
+		//enveloppe.calculEnveloppe();
+		//std::vector<Point*> pointsEnveloppe = enveloppe.getEnveloppe();
+
+		Jarvis jarvis(tmp);
+		jarvis.computeJarvis();
+		std::vector<Point*> pointsEnveloppe = jarvis.getEnveloppe();
+
+		// Calculer les normales de chaque arete de l'enveloppe
+		// Puis produit scalaire avec le nouveau point
+		for (auto p = pointsEnveloppe.begin(); p != pointsEnveloppe.end(); ++p)
+		{
+			Point normal, *p2, *p3;
+			Point edge;
+			if (p == pointsEnveloppe.end() - 1)
+				p2 = pointsEnveloppe.front();
+			else
+				p2 = *(p + 1);
+			if (p == pointsEnveloppe.begin())
+				p3 = pointsEnveloppe.back();
+			else
+				p3 = *(p - 1);
+			// Normale value
+			normal.setX(-(p2->getY() - (*p)->getY()));
+			normal.setY(p2->getX() - (*p)->getX());
+			edge.setX(p3->getX() - (*p)->getX());
+			edge.setY(p3->getY() - (*p)->getY());
+			double dot = utils::dotProduct(normal, edge);
+			if (dot < 0)
+				normal = -(normal);
+			edge.setX(nextPoint->getX()- (*p)->getX());
+			edge.setY(nextPoint->getY() - (*p)->getY());
+			dot = utils::dotProduct(normal, edge);
+			if (dot < 0)
+				_triangles.push_back(new Triangle(*p, p2, nextPoint));
+		}
+>>>>>>> 81337eaa94c691e4fa0f340a8ef6c29497170d48
 	}
 
 	/*int j = 0;

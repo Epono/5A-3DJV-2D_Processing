@@ -35,10 +35,21 @@ void Graham_Scan::calculEnveloppe()
 		}
 		else
 		{
-			sInit = prec;
-			enveloppe_.erase(pivot);
-			pivot = sInit;
+			//sInit = prec;
+			//enveloppe_.erase(pivot);
+			//pivot = sInit;
+			//avance = false;
+
+			if(pivot == enveloppe_.begin()) {
+				enveloppe_.erase(pivot);
+				sInit++;
+			}
+			else {
+				sInit = pivot - 1;
+				enveloppe_.erase(pivot);
+			}
 			avance = false;
+			pivot = sInit;
 		}
 	} while (pivot != sInit || !avance);
 }

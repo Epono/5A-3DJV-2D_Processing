@@ -137,7 +137,7 @@ void Triangulation2D_qcq::computeTriangulation()
 			edge.setX(nextPoint->getX()- (*p)->getX());
 			edge.setY(nextPoint->getY() - (*p)->getY());
 			dot = utils::dotProduct(normal, edge);
-			if (dot < 0)
+			if (dot <= 0)
 				_triangles.push_back(new Triangle(*p, p2, nextPoint));
 		}
 	}

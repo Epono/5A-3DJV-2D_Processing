@@ -15,22 +15,22 @@ private:
 
 public:
 
-	QuadEdge* Onext() const { return _onext; }
-	void Onext(QuadEdge* val) { _onext = val; }
-	QuadEdge* Rot() const { return _rot; }
-	void Rot(QuadEdge* val) { _rot = val; }
-	Point* Orig() const { return _orig; }
-	void Orig(Point* val) { _orig = val; }
-	bool Mark() const { return _mark; }
-	void Mark(bool val) { _mark = val; }
+	QuadEdge* getOnext() const { return _onext; }
+	void setOnext(QuadEdge* val) { _onext = val; }
+	QuadEdge* getRot() const { return _rot; }
+	void setRot(QuadEdge* val) { _rot = val; }
+	Point* getOrig() const { return _orig; }
+	void setOrig(Point* val) { _orig = val; }
+	bool isMarked() const { return _mark; }
+	void setMarked(bool val) { _mark = val; }
 
-	QuadEdge* sym() { return _rot->Rot(); }
-	Point* dest() { return sym()->Orig(); }
-	QuadEdge* rotSym() { return _rot->sym(); }
-	QuadEdge* oprev() { return _rot->_onext->_rot; }
-	QuadEdge* dprev() { return rotSym()->_onext->rotSym(); }
-	QuadEdge* lnext() { return rotSym()->_onext->_rot; }
-	QuadEdge* lprev() { return _onext->sym(); }
+	QuadEdge* sym() { return getRot()->getRot(); }
+	Point* dest() { return sym()->getOrig(); }
+	QuadEdge* rotSym() { return getRot()->sym(); }
+	QuadEdge* oprev() { return getRot()->getOnext()->getRot(); }
+	QuadEdge* dprev() { return rotSym()->getOnext()->rotSym(); }
+	QuadEdge* lnext() { return rotSym()->getOnext()->getRot(); }
+	QuadEdge* lprev() { return getOnext()->sym(); }
 
 	static QuadEdge* makeEdge(Point* orig, Point* dest);
 	static void splice(QuadEdge* a, QuadEdge* b);

@@ -1,101 +1,68 @@
 #include "Delaunay.h"
 
-void Delaunay::updateBoundigBox(Point* p) {
-	int minx = std::min(_minx, p->getX());
-	int maxx = std::max(_maxx, p->getX());
-	int miny = std::min(_miny, p->getY());
-	int maxy = std::max(_maxy, p->getY());
-	setBoundigBox(minx, miny, maxx, maxy);
-}
-
-QuadEdge* Delaunay::locate(Point* p) {
-	// outside the bounding box ?
-	if(p->getX() < _minx || p->getX() > _maxx || p->getY() < _miny || p->getY() > _maxy) {
-		updateBoundigBox(p);
-	}
-
+QuadEdge* Delaunay::locate(Point* x) {
 	QuadEdge* e = _startingEdge;
 	while(true) {
-		// duplicate point ?
-		//TODO:
-		if(e->Orig() != nullptr && p->getX() == e->Orig()->getX() && p->getY() == e->Orig()->getY())
+		// On regarde si le point existe deja
+		if(x == e->getOrig() || x == e->dest()) {
 			return e;
-		if(e->dest() != nullptr && p->getX() == e->dest()->getX() && p->getY() == e->dest()->getY())
-			return e;
+		}
 
 		// walk
-		if(QuadEdge::isAtRightOf(e, p))
+		if(QuadEdge::isAtRightOf(e, x)) {
 			e = e->sym();
-		else if(!QuadEdge::isAtRightOf(e->Onext(), p))
-			e = e->Onext();
-		else if(!QuadEdge::isAtRightOf(e->dprev(), p))
+		}
+		else if(!QuadEdge::isAtRightOf(e->getOnext(), x)) {
+			e = e->getOnext();
+		}
+		else if(!QuadEdge::isAtRightOf(e->dprev(), x)) {
 			e = e->dprev();
-		else
+		}
+		else {
 			return e;
+		}
 	}
 }
 
-Delaunay::Delaunay() : _minx(FLT_MIN), _miny(FLT_MIN), _maxx(FLT_MAX), _maxy(FLT_MAX) {
-	QuadEdge* ab = QuadEdge::makeEdge(_a, _b);
-	QuadEdge* bc = QuadEdge::makeEdge(_b, _c);
-	QuadEdge* cd = QuadEdge::makeEdge(_c, _d);
-	QuadEdge* da = QuadEdge::makeEdge(_d, _a);
+Delaunay::Delaunay() {
+	_bottomLeft = new Point(0, 0);
+	_bottomRight = new Point(WIDTH, 0);
+	_topRight = new Point(WIDTH, HEIGHT);
+	_topLeft = new Point(0, HEIGHT);
 
-	QuadEdge::splice(ab->sym(), bc);
-	QuadEdge::splice(bc->sym(), cd);
-	QuadEdge::splice(cd->sym(), da);
-	QuadEdge::splice(da->sym(), ab);
+	QuadEdge* bottom = QuadEdge::makeEdge(_bottomLeft, _bottomRight);
+	QuadEdge* right = QuadEdge::makeEdge(_bottomRight, _topRight);
+	QuadEdge* top = QuadEdge::makeEdge(_topRight, _topLeft);
+	QuadEdge* left = QuadEdge::makeEdge(_topLeft, _bottomLeft);
 
-	_startingEdge = ab;
+	QuadEdge::splice(bottom->sym(), right);
+	QuadEdge::splice(right->sym(), top);
+	QuadEdge::splice(top->sym(), left);
+	QuadEdge::splice(left->sym(), bottom);
+
+	_startingEdge = bottom;
 }
 
-void Delaunay::setBoundigBox(float minx, float miny, float maxx, float maxy) {
-	// update saved values
-	_minx = minx;
-	_maxx = maxx;
-	_miny = miny;
-	_maxy = maxy;
+void Delaunay::insertPoint(Point* newPoint) {
+	QuadEdge* e = locate(newPoint);
 
-	// extend the bounding-box to surround min/max
-	int centerx = (minx + maxx) / 2;
-	int centery = (miny + maxy) / 2;
-	int x_min = (int) ((minx - centerx - 1) * 10 + centerx);
-	int x_max = (int) ((maxx - centerx + 1) * 10 + centerx);
-	int y_min = (int) ((miny - centery - 1) * 10 + centery);
-	int y_max = (int) ((maxy - centery + 1) * 10 + centery);
-
-	// set new positions
-	_a->setX(x_min);
-	_a->setY(y_min);
-	_b->setX(x_max);
-	_b->setY(y_min);
-	_c->setX(x_max);
-	_c->setY(y_max);
-	_d->setX(x_min);
-	_d->setY(y_max);
-}
-
-void Delaunay::insertPoint(Point* p) {
-	QuadEdge* e = locate(p);
-
-	// point is a duplicate -> nothing to do
-	if(p->getX() == e->Orig()->getX() && p->getY() == e->Orig()->getY())
+	// On regarde si le point existe deja
+	if(e->getOrig() != nullptr && newPoint->getX() == e->getOrig()->getX() && newPoint->getY() == e->getOrig()->getY())
 		return;
-	if(p->getX() == e->dest()->getX() && p->getY() == e->dest()->getY())
+	if(e->dest() != nullptr && newPoint->getX() == e->dest()->getX() && newPoint->getY() == e->dest()->getY())
 		return;
 
-	// point is on an existing edge -> remove the edge
-	if(QuadEdge::isOnLine(e, p)) {
+	// Si le point est sur une edge, on supprime l'edge
+	if(QuadEdge::isOnLine(e, newPoint) == 1) {
 		e = e->oprev();
 		//TODO:
 		//_quadEdges.remove(e->Onext()->sym());
 		//_quadEdges.remove(e->Onext());
-		QuadEdge::deleteEdge(e->Onext());
+		QuadEdge::deleteEdge(e->getOnext());
 	}
 
-	// Connect the new point to the vertices of the containing triangle
-	// (or quadrilateral in case of the point is on an existing edge)
-	QuadEdge* base = QuadEdge::makeEdge(e->Orig(), p);
+	// On connecte le point aux sommets du triangle le contenant
+	QuadEdge* base = QuadEdge::makeEdge(e->getOrig(), newPoint);
 	_quadEdges.push_back(base);
 
 	QuadEdge::splice(base, e);
@@ -106,97 +73,86 @@ void Delaunay::insertPoint(Point* p) {
 		e = base->oprev();
 	} while(e->lnext() != _startingEdge);
 
-	// Examine suspect edges to ensure that the Delaunay condition is satisfied.
-	do {
+	// On vérifie si la condition de Delaunay est vérifiée (pas d'autres points à l'intérieur du cercle circonscrit)
+	while(true) {
 		QuadEdge* t = e->oprev();
 
 		if(QuadEdge::isAtRightOf(e, t->dest()) &&
-		   QuadEdge::inCircle(e->Orig(), t->dest(), e->dest(), p)) {
-			// flip triangles
+		   QuadEdge::inCircle(e->getOrig(), t->dest(), e->dest(), newPoint)) {
 			QuadEdge::swapEdge(e);
 			e = e->oprev();
 		}
-		else if(e->Onext() == _startingEdge)
-			return; // no more suspect edges
+		else if(e->getOnext() == _startingEdge)
+			return;
 		else
-			e = e->Onext()->lprev();  // next suspect edge
-	} while(true);
+			e = e->getOnext()->lprev();
+	}
 }
 
-std::vector<std::vector<Point*>*> Delaunay::computeEdges() {
-	std::vector<std::vector<Point*>*> edges;
-	// do not return edges pointing to/from surrouding triangle
+std::vector<Line*> Delaunay::computeEdges() {
+	std::vector<Line*> edges;
 	for(QuadEdge* q : _quadEdges) {
-		if(q->Orig() == _a || q->Orig() == _b || q->Orig() == _c || q->Orig() == _d) continue;
-		if(q->dest() == _a || q->dest() == _b || q->dest() == _c || q->dest() == _d) continue;
-		std::vector<Point*>* edgesTemp = new std::vector<Point*>;
-		edgesTemp->push_back(q->Orig());
-		edgesTemp->push_back(q->dest());
-		edges.push_back(edgesTemp);
+		// Ignore le triangle global
+		if(q->getOrig() == _bottomLeft || q->getOrig() == _bottomRight || q->getOrig() == _topRight || q->getOrig() == _topLeft)
+			continue;
+		if(q->dest() == _bottomLeft || q->dest() == _bottomRight || q->dest() == _topRight || q->dest() == _topLeft)
+			continue;
+		edges.push_back(new Line(q->getOrig(), q->dest()));
 	}
 	return edges;
 }
 
-std::vector<std::vector<Point*>*> Delaunay::computeTriangles() {
-	std::vector<std::vector<Point*>*> triangles;
+std::vector<Triangle*> Delaunay::computeTriangles() {
+	std::vector<Triangle*> triangles;
 
-	// do not process edges pointing to/from surrouding triangle
-	// --> mark them as already computed
+	// Ignore le triangle global en les marquant 
 	for(QuadEdge* q : _quadEdges) {
-		q->Mark(false);
-		q->sym()->Mark(false);
-		if(q->Orig() == _a || q->Orig() == _b || q->Orig() == _c || q->Orig() == _d)
-			q->Mark(true);
-		if(q->dest() == _a || q->dest() == _b || q->dest() == _c || q->dest() == _d)
-			q->sym()->Mark(true);
+		q->setMarked(false);
+		q->sym()->setMarked(false);
+		if(q->getOrig() == _bottomLeft || q->getOrig() == _bottomRight || q->getOrig() == _topRight || q->getOrig() == _topLeft)
+			q->setMarked(true);
+		if(q->dest() == _bottomLeft || q->dest() == _bottomRight || q->dest() == _topRight || q->dest() == _topLeft)
+			q->sym()->setMarked(true);
 	}
 
-	// compute the 2 triangles associated to each quadEdge
+	// Process les 2 triangles de chaque QuadEdge
 	for(QuadEdge* qe : _quadEdges) {
-		// first triangle
 		QuadEdge* q1 = qe;
 		QuadEdge* q2 = q1->lnext();
 		QuadEdge* q3 = q2->lnext();
-		if(!q1->Mark() && !q2->Mark() && !q3->Mark()) {
-			std::vector<Point*>* trianglesTemp = new std::vector<Point*>;
-			trianglesTemp->push_back(q1->Orig());
-			trianglesTemp->push_back(q2->Orig());
-			trianglesTemp->push_back(q3->Orig());
-			triangles.push_back(trianglesTemp);
+		// Si aucun des QuadEdge n'est marqué, on ajoute le triangle
+		if(!q1->isMarked() && !q2->isMarked() && !q3->isMarked()) {
+			triangles.push_back(new Triangle(q1->getOrig(), q2->getOrig(), q3->getOrig()));
 		}
 
-		// second triangle
 		QuadEdge* qsym1 = qe->sym();
 		QuadEdge* qsym2 = qsym1->lnext();
 		QuadEdge* qsym3 = qsym2->lnext();
-		if(!qsym1->Mark() && !qsym2->Mark() && !qsym3->Mark()) {
-			std::vector<Point*>* trianglesTemp = new std::vector<Point*>;
-			trianglesTemp->push_back(qsym1->Orig());
-			trianglesTemp->push_back(qsym2->Orig());
-			trianglesTemp->push_back(qsym3->Orig());
-			triangles.push_back(trianglesTemp);
+		// Si aucun des QuadEdge n'est marqué, on ajoute le triangle
+		if(!qsym1->isMarked() && !qsym2->isMarked() && !qsym3->isMarked()) {
+			triangles.push_back(new Triangle(qsym1->getOrig(), qsym2->getOrig(), qsym3->getOrig()));
 		}
 
-		// mark as used
-		qe->Mark(true);
-		qe->sym()->Mark(true);
+		// Marque la QuadEdge comme ayant été process
+		qe->setMarked(true);
+		qe->sym()->setMarked(true);
 	}
 
 	return triangles;
 }
 
-std::vector<std::vector<Point*>*> Delaunay::computeVoronoi() {
-	std::vector<std::vector<Point*>*> voronoi;
+std::vector<LineStrip*> Delaunay::computeVoronoi() {
+	std::vector<LineStrip*> voronoi;
 
 	// do not process edges pointing to/from surrouding triangle
 	// --> mark them as already computed
 	for(QuadEdge* q : _quadEdges) {
-		q->Mark(false);
-		q->sym()->Mark(false);
-		if(q->Orig() == _a || q->Orig() == _b || q->Orig() == _c || q->Orig() == _d)
-			q->Mark(true);
-		if(q->dest() == _a || q->dest() == _b || q->dest() == _c || q->dest() == _d)
-			q->sym()->Mark(true);
+		q->setMarked(false);
+		q->sym()->setMarked(false);
+		if(q->getOrig() == _bottomLeft || q->getOrig() == _bottomRight || q->getOrig() == _topRight || q->getOrig() == _topLeft)
+			q->setMarked(true);
+		if(q->dest() == _bottomLeft || q->dest() == _bottomRight || q->dest() == _topRight || q->dest() == _topLeft)
+			q->sym()->setMarked(true);
 	}
 
 	for(QuadEdge* qe : _quadEdges) {
@@ -204,25 +160,25 @@ std::vector<std::vector<Point*>*> Delaunay::computeVoronoi() {
 		// walk throught left and right region
 		for(int b = 0; b <= 1; b++) {
 			QuadEdge* qstart = (b == 0) ? qe : qe->sym();
-			if(qstart->Mark())
+			if(qstart->isMarked())
 				continue;
 
 			// new region start
-			std::vector<Point*> poly;
+			LineStrip* poly = new LineStrip();
 
 			// walk around region
 			QuadEdge* qregion = qstart;
 			while(true) {
-				qregion->Mark(true);
+				qregion->setMarked(true);
 
 				// compute CircumCenter if needed
-				if(qregion->Rot()->Orig() == nullptr) {
+				if(qregion->getRot()->getOrig() == nullptr) {
 					QuadEdge* q1 = qregion;
-					Point* p0 = q1->Orig();
+					Point* p0 = q1->getOrig();
 					QuadEdge* q2 = q1->lnext();
-					Point* p1 = q2->Orig();
+					Point* p1 = q2->getOrig();
 					QuadEdge* q3 = q2->lnext();
-					Point* p2 = q3->Orig();
+					Point* p2 = q3->getOrig();
 
 					double ex = p1->getX() - p0->getX(), ey = p1->getY() - p0->getY();
 					double nx = p2->getY() - p1->getY(), ny = p1->getX() - p2->getX();
@@ -232,19 +188,18 @@ std::vector<std::vector<Point*>*> Delaunay::computeVoronoi() {
 					double cy = (p1->getY() + p2->getY())*0.5 + s*ny;
 
 					Point* p = new Point(cx, cy);
-					qregion->Rot()->Orig(p);
+					qregion->getRot()->setOrig(p);
 				}
 
-				poly.push_back(qregion->Rot()->Orig());
+				poly->addPoint(qregion->getRot()->getOrig());
 
-				qregion = qregion->Onext();
+				qregion = qregion->getOnext();
 				if(qregion == qstart)
 					break;
 			}
 
 			// add region to output list
-			// TODO:
-			//voronoi.add(poly.toArray(new Point[0]));
+			voronoi.push_back(poly);
 		}
 	}
 	return voronoi;

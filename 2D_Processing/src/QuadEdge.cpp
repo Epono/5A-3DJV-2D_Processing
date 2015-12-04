@@ -7,33 +7,33 @@ QuadEdge* QuadEdge::makeEdge(Point* orig, Point* dest) {
 	QuadEdge* q3 = new QuadEdge(nullptr, nullptr, nullptr);
 
 	// create the segment
-	q0->Onext(q0);
-	q2->Onext(q2); // lonely segment: no "next" quadedge
-	q1->Onext(q3);
-	q3->Onext(q1); // in the dual: 2 communicating facets
+	q0->setOnext(q0);
+	q2->setOnext(q2); // lonely segment: no "next" quadedge
+	q1->setOnext(q3);
+	q3->setOnext(q1); // in the dual: 2 communicating facets
 
 	// dual switch
-	q0->Rot(q1);
-	q1->Rot(q2);
-	q2->Rot(q3);
-	q3->Rot(q0);
+	q0->setRot(q1);
+	q1->setRot(q2);
+	q2->setRot(q3);
+	q3->setRot(q0);
 
 	return q0;
 }
 
 void QuadEdge::splice(QuadEdge* a, QuadEdge* b) {
-	QuadEdge* alpha = a->Onext()->Rot();
-	QuadEdge* beta = b->Onext()->Rot();
+	QuadEdge* alpha = a->getOnext()->getRot();
+	QuadEdge* beta = b->getOnext()->getRot();
 
-	QuadEdge* t1 = b->Onext();
-	QuadEdge* t2 = a->Onext();
-	QuadEdge* t3 = beta->Onext();
-	QuadEdge* t4 = alpha->Onext();
+	QuadEdge* t1 = b->getOnext();
+	QuadEdge* t2 = a->getOnext();
+	QuadEdge* t3 = beta->getOnext();
+	QuadEdge* t4 = alpha->getOnext();
 
-	a->Onext(t1);
-	b->Onext(t2);
-	alpha->Onext(t3);
-	beta->Onext(t4);
+	a->setOnext(t1);
+	b->setOnext(t2);
+	alpha->setOnext(t3);
+	beta->setOnext(t4);
 }
 
 QuadEdge* QuadEdge::connect(QuadEdge* a, QuadEdge* b) {
@@ -50,8 +50,8 @@ void QuadEdge::swapEdge(QuadEdge* e) {
 	splice(e->sym(), b);
 	splice(e, a->lnext());
 	splice(e->sym(), b->lnext());
-	e->Orig(a->dest());
-	e->sym()->Orig(b->dest());
+	e->setOrig(a->dest());
+	e->sym()->setOrig(b->dest());
 }
 
 void QuadEdge::deleteEdge(QuadEdge* a) {
@@ -61,20 +61,23 @@ void QuadEdge::deleteEdge(QuadEdge* a) {
 
 bool QuadEdge::isOnLine(QuadEdge* e, Point* p) {
 	// test if the vector product is zero
-	if((p->getX() - e->Orig()->getX())*(p->getY() - e->dest()->getY()) == (p->getY() - e->Orig()->getY())*(p->getX() - e->dest()->getX()))
+	if((p->getX() - e->getOrig()->getX())*(p->getY() - e->dest()->getY()) == (p->getY() - e->getOrig()->getY())*(p->getX() - e->dest()->getX())) {
 		return true;
+	}
 	return false;
 }
 
 bool QuadEdge::isAtRightOf(QuadEdge* a, Point* p) {
-	return isCounterClockwise(p, a->dest(), a->Orig());
-
+	bool result = isCounterClockwise(p, a->dest(), a->getOrig());
+	std::cout << "Le point " << *p << (result ? " est " : " n'est pas ") << "a droite du segment " << *(a->getOrig()) << " - " << *(a->dest()) << std::endl;
+	return result;
 }
 
 bool QuadEdge::isCounterClockwise(Point* a, Point* b, Point* c) {
 	// test the sign of the determinant of ab x cb
-	if(a != nullptr && b != nullptr && c != nullptr && (a->getX() - b->getX())*(b->getY() - c->getY()) > (a->getY() - b->getY())*(b->getX() - c->getX()))
+	if((a->getX() - b->getX())*(b->getY() - c->getY()) > (a->getY() - b->getY())*(b->getX() - c->getX())) {
 		return true;
+	}
 	return false;
 }
 

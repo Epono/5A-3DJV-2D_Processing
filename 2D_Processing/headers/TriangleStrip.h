@@ -19,6 +19,9 @@ public:
 	TriangleStrip(std::vector<Point*> points, color_rgb color) :
 		_points(points), _triangles(std::vector<Triangle*>()), _color(color) {}
 
+	TriangleStrip(std::vector<Point*> points, std::vector<Triangle*> triangles) :
+		_points(std::vector<Point*>(points)), _triangles(triangles), _color(color_rgb(1.f, 1.f, 1.f)) {}
+
 	std::vector<Point*> getPoints() const { return _points; }
 	void setPoints(std::vector<Point*> points) { _points = points; }
 

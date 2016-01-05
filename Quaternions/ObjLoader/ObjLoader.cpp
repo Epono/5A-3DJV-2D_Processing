@@ -35,6 +35,7 @@ struct ViewProj
 	glm::mat4 viewMatrix;
 	glm::mat4 projectionMatrix;
 	Quaternion rotation;
+	glm::vec3 position;
 	GLuint UBO;	
 	bool autoRotateCamera;
 } g_Camera;
@@ -413,9 +414,9 @@ void Render()
     glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
 
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	//glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	//glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	glBindVertexArray(0);
 
 	// dessine les tweakBar
 	TwDraw();  
@@ -423,8 +424,87 @@ void Render()
 	glutSwapBuffers();
 }
 
-int main(int argc, char* argv[])
-{
+
+
+
+
+void mouse(int button, int state, int x, int y) {
+	if(!TwEventMouseButtonGLUT(button, state, x, y)) {  // send event to AntTweakBar
+
+	}
+	glutPostRedisplay();
+}
+
+void motion(int x, int y) {
+	if(!TwEventMouseMotionGLUT(x, y)) {  // send event to AntTweakBar
+
+	}
+	glutPostRedisplay(); 
+}
+
+void keyboard(unsigned char key, int x, int y) {
+	if(!TwEventKeyboardGLUT(key, x, y)) {  // send event to AntTweakBar
+		switch(key) {
+		case 27:
+			exit(0);
+		case 'q':
+			exit(0);
+		}
+	}
+
+	glutPostRedisplay();
+}
+
+void keyboardSpecial(int key, int x, int y) {
+	if(!TwEventSpecialGLUT(key, x, y)) { // send event to AntTweakBar
+		int modifier = glutGetModifiers();
+
+		switch(modifier) {
+		case 0: // NONE
+			switch(key) {
+			case 100: // LEFT
+				break;
+			case 101: // UP
+				break;
+			case 102: // RIGHT
+				break;
+			case 103: // DOWN
+				break;
+			}
+			break;
+		case 1: // SHIFT
+			switch(key) {
+			case 100: // LEFT
+				break;
+			case 101: // UP
+				break;
+			case 102: // RIGHT
+				break;
+			case 103: // DOWN
+				break;
+			}
+			break;
+		case 2: // CTRL
+			switch(key) {
+			case 100: // LEFT
+				break;
+			case 101: // UP
+				break;
+			case 102: // RIGHT
+				break;
+			case 103: // DOWN
+				break;
+			}
+			break;
+		case 3: // ALT
+			break;
+		}
+	}
+
+	glutPostRedisplay();
+}
+
+int main(int argc, char* argv[]) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(800, 600);
@@ -445,11 +525,11 @@ int main(int argc, char* argv[])
 	// redirection pour AntTweakBar
 	// dans le cas ou vous utiliseriez deja ces callbacks
 	// il suffit d'appeler l'event d'AntTweakBar depuis votre fonction de rappel
-	glutMouseFunc((GLUTmousebuttonfun)TwEventMouseButtonGLUT);
-	glutMotionFunc((GLUTmousemotionfun)TwEventMouseMotionGLUT);
-	glutPassiveMotionFunc((GLUTmousemotionfun)TwEventMouseMotionGLUT);
-	glutKeyboardFunc((GLUTkeyboardfun)TwEventKeyboardGLUT);
-	glutSpecialFunc((GLUTspecialfun)TwEventSpecialGLUT);
+	glutMouseFunc((GLUTmousebuttonfun) mouse);
+	glutMotionFunc((GLUTmousemotionfun) motion);
+	glutPassiveMotionFunc((GLUTmousemotionfun) TwEventMouseMotionGLUT);
+	glutKeyboardFunc((GLUTkeyboardfun) keyboard);
+	glutSpecialFunc((GLUTspecialfun) keyboardSpecial);
 	TwGLUTModifiersFunc(glutGetModifiers);
 
 	glutMainLoop();
@@ -458,4 +538,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-

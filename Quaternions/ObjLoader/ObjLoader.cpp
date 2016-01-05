@@ -331,6 +331,8 @@ void Initialize()
 	LoadOBJ(inputFile);
 	InitCubemap();	
 
+	g_Camera.position = glm::vec3(0.0f, 0.0f, 5.0f);
+
 
 }
 
@@ -390,8 +392,8 @@ void Render()
 
 	float rotY = glm::radians(g_Camera.rotation.y_);
 	const glm::vec4 orbitDistance(0.0f, 0.0f, 5.0f, 1.0f);
-	glm::vec4 position = orbitDistance;
-	g_Camera.viewMatrix = glm::lookAt(glm::vec3(position), glm::vec3((position + glm::vec4(direction.x, direction.y, direction.z, 0))), glm::vec3(0.f, 1.f, 0.f));
+	glm::vec3 position = g_Camera.position;
+	g_Camera.viewMatrix = glm::lookAt(glm::vec3(position), position + direction, glm::vec3(0.f, 1.f, 0.f));
 
 	glBindBuffer(GL_UNIFORM_BUFFER, g_Camera.UBO);
 	//glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, glm::value_ptr(g_Camera.viewMatrix), GL_STREAM_DRAW);
@@ -519,9 +521,17 @@ void motion(int x, int y) {
 void keyboard(unsigned char key, int x, int y) {
 	if(!TwEventKeyboardGLUT(key, x, y)) {  // send event to AntTweakBar
 		switch(key) {
+		case 'q': // LEFT
+			break;
+		case 'z': // UP
+			g_Camera.position += direction;
+			break;
+		case 'r': // RIGHT
+			break;
+		case 's': // DOWN
+			g_Camera.position -= direction;
+			break;
 		case 27:
-			exit(0);
-		case 'q':
 			exit(0);
 		}
 	}
@@ -539,10 +549,12 @@ void keyboardSpecial(int key, int x, int y) {
 			case 100: // LEFT
 				break;
 			case 101: // UP
+				g_Camera.position += direction;
 				break;
 			case 102: // RIGHT
 				break;
 			case 103: // DOWN
+				g_Camera.position -= direction;
 				break;
 			}
 			break;

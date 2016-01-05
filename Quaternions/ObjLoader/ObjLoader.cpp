@@ -520,13 +520,22 @@ void motion(int x, int y) {
 
 void keyboard(unsigned char key, int x, int y) {
 	if(!TwEventKeyboardGLUT(key, x, y)) {  // send event to AntTweakBar
+										   // Right vector
+		glm::vec3 right = glm::vec3(
+			sin(horizontalAngle - 3.14f / 2.0f),
+			0,
+			cos(horizontalAngle - 3.14f / 2.0f)
+			);
+
 		switch(key) {
 		case 'q': // LEFT
+			g_Camera.position -= right;
 			break;
 		case 'z': // UP
 			g_Camera.position += direction;
 			break;
-		case 'r': // RIGHT
+		case 'd': // RIGHT
+			g_Camera.position += right;
 			break;
 		case 's': // DOWN
 			g_Camera.position -= direction;

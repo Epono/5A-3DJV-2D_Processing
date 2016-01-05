@@ -3,6 +3,7 @@
 // ObjLoader.cpp 
 //
 
+#define _USE_MATH_DEFINES
 
 #include "Common.h"
 
@@ -11,6 +12,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 
 #include "../common/EsgiShader.h"
@@ -20,6 +22,7 @@
 #include "AntTweakBar.h"
 
 #include "Quaternion.h"
+
 
 // ---
 
@@ -34,6 +37,7 @@ struct ViewProj
 {
 	glm::mat4 viewMatrix;
 	glm::mat4 projectionMatrix;
+	glm::mat4 rotationMatrix;
 	Quaternion rotation;
 	glm::vec3 position;
 	GLuint UBO;	
@@ -60,6 +64,20 @@ Objet g_Objet;
 Objet g_CubeMap;
 
 // ---
+
+// Initial position : on +Z
+glm::vec3 position = glm::vec3(0, 0, 5);
+// Initial horizontal angle : toward -Z
+float horizontalAngle = 3.14f;
+// Initial vertical angle : none
+float verticalAngle = 0.0f;
+// Initial Field of View
+float initialFoV = 45.0f;
+
+float speed = 3.0f; // 3 units / second
+float mouseSpeed = 0.005f;
+
+glm::vec3 direction;
 
 void InitCubemap()
 {
@@ -364,10 +382,16 @@ void Render()
 
 	g_Camera.projectionMatrix = glm::perspectiveFov(45.f, (float)width, (float)height, 0.1f, 1000.f);
 	// rotation orbitale de la camera
+	//float rotY = glm::radians(g_Camera.rotation.y_);
+	//float rotZ = glm::radians(g_Camera.rotation.z_);
+	//glm::vec4 position = glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
+	//g_Camera.viewMatrix = g_Camera.rotation.toMatrixUnit();
+	//g_Camera.viewMatrix = glm::lookAt(glm::vec3(position), glm::vec3(rotY, 0, rotZ), glm::vec3(0.f, 1.f, 0.f));
+
 	float rotY = glm::radians(g_Camera.rotation.y_);
 	const glm::vec4 orbitDistance(0.0f, 0.0f, 5.0f, 1.0f);
-	glm::vec4 position = glm::eulerAngleY(rotY) * orbitDistance;
-	g_Camera.viewMatrix = glm::lookAt(glm::vec3(position), glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+	glm::vec4 position = orbitDistance;
+	g_Camera.viewMatrix = glm::lookAt(glm::vec3(position), glm::vec3((position + glm::vec4(direction.x, direction.y, direction.z, 0))), glm::vec3(0.f, 1.f, 0.f));
 
 	glBindBuffer(GL_UNIFORM_BUFFER, g_Camera.UBO);
 	//glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, glm::value_ptr(g_Camera.viewMatrix), GL_STREAM_DRAW);
@@ -428,18 +452,68 @@ void Render()
 
 
 
+int oldX;
+int oldY;
+
 void mouse(int button, int state, int x, int y) {
 	if(!TwEventMouseButtonGLUT(button, state, x, y)) {  // send event to AntTweakBar
+		if(button == GLUT_LEFT_BUTTON) {
+			if(state == GLUT_UP) {
 
+			}
+			else if(state == GLUT_DOWN) {
+				oldX = x;
+				oldY = y;
+			}
+		}
 	}
 	glutPostRedisplay();
 }
 
 void motion(int x, int y) {
-	if(!TwEventMouseMotionGLUT(x, y)) {  // send event to AntTweakBar
+	TwEventMouseMotionGLUT(x, y);
 
-	}
+	int deltaX = oldX - x;
+	int deltaY = oldY - y;
+
+	auto width = glutGet(GLUT_WINDOW_WIDTH);
+	auto height = glutGet(GLUT_WINDOW_HEIGHT);
+	Quaternion qX(
+		sin(((y) * M_PI) / height),
+		0,
+		0,
+		cos(((y) * M_PI) / height)
+		);
+	Quaternion qY(
+		0,
+		sin(((x) * M_PI) / width),
+		0,
+		cos(((x) * M_PI) / width)
+		);
+	//Quaternion qZ(
+	//	0,
+	//	0,
+	//	sin(((y) * M_PI) / height),
+	//	cos(((y) * M_PI) / height)
+	//	);
+	g_Camera.rotation = qY * qX;
+	g_Camera.rotationMatrix = g_Camera.rotation.toMatrixUnit();
+
 	glutPostRedisplay(); 
+
+
+	horizontalAngle += mouseSpeed * deltaX;
+	verticalAngle += mouseSpeed * deltaY;
+
+	// Direction : Spherical coordinates to Cartesian coordinates conversion
+	direction = glm::vec3(
+		cos(verticalAngle) * sin(horizontalAngle),
+		sin(verticalAngle),
+		cos(verticalAngle) * cos(horizontalAngle)
+		);
+
+	oldX = x;
+	oldY = y;
 }
 
 void keyboard(unsigned char key, int x, int y) {

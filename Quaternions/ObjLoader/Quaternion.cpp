@@ -29,7 +29,7 @@ inline bool Quaternion::operator!=(const Quaternion& other) const
 	return !((*this) == other);
 }
 
-inline Quaternion& Quaternion::operator=(const Quaternion& other)
+Quaternion& Quaternion::operator=(const Quaternion& other)
 {
 	if (this != &other)
 	{
@@ -93,7 +93,7 @@ inline Quaternion Quaternion::operator+(const Quaternion& b) const
 	return Quaternion(x_ + b.x_, y_ + b.y_, z_ + b.z_, w_ + b.w_);
 }
 
-inline Quaternion Quaternion::operator*(const Quaternion& other) const
+Quaternion Quaternion::operator*(const Quaternion& other) const
 {
 	Quaternion tmp;
 
@@ -200,4 +200,39 @@ inline Quaternion& Quaternion::makeIdentity()
 	y_ = 0.f;
 	z_ = 0.f;
 	return *this;
+}
+
+
+glm::mat4 Quaternion::toMatrixUnit() {
+	//this->normalize();
+	float qxx = x_ * x_;
+	float qyy = y_ * y_;
+	float qzz = z_ * z_;
+	float qxz = x_ * z_;
+	float qxy = x_ * y_;
+	float qyz = y_ * z_;
+	float qwx = w_ * x_;
+	float qwy = w_ * y_;
+	float qwz = w_ * z_;
+
+	glm::mat4 result(
+		(1 - 2 * (qyy + qzz)),
+		(2 * (qxy + qwz)),
+		(2 * (qxz - qwy)),
+		0,
+
+		(2 * (qxy - qwz)),
+		(1 - 2 * (qxx + qzz)),
+		(2 * (qyz + qwx)),
+		0,
+
+		(2 * (qxz + qwy)),
+		(2 * (qyz - qwx)),
+		(1 - 2 * (qxx + qyy)),
+		0,
+
+		0, 0, 0, 1
+		);
+
+	return result;
 }
